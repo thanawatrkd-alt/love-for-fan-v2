@@ -894,12 +894,52 @@
         }
         
         // Function to load config from GitHub
+
+        function applyConfigToUI(data) {
+            if(!data) return;
+            if(data.mainTitle) {
+                document.getElementById('display-main-title').innerText = data.mainTitle;
+                document.getElementById('admin-main-title').value = data.mainTitle;
+            }
+            if(data.botName) {
+                updateBotNameDisplay(data.botName);
+                document.getElementById('admin-bot-name').value = data.botName;
+            }
+            if(data.customMessage) {
+                document.getElementById('display-message').innerText = data.customMessage;
+                document.getElementById('admin-message').value = data.customMessage;
+            }
+            if(data.botGreeting) {
+                const greetingEl = document.querySelector('#ai-chat-box .chat-message.ai');
+                if(greetingEl) greetingEl.innerText = data.botGreeting;
+                document.getElementById('admin-bot-greeting').value = data.botGreeting;
+            }
+            if(data.anniversaryDate) {
+                document.getElementById('admin-start-date').value = data.anniversaryDate;
+                ANNIVERSARY_DATE = new Date(data.anniversaryDate);
+            }
+            if(data.spotifyUrl) {
+                document.getElementById('admin-spotify-url').value = data.spotifyUrl;
+                updateSpotifyEmbed(data.spotifyUrl);
+            }
+            if(data.cmd1Text) document.getElementById('admin-cmd-1').value = data.cmd1Text;
+            if(data.cmd2Text) document.getElementById('admin-cmd-2').value = data.cmd2Text;
+            if(data.cmd3Text) document.getElementById('admin-cmd-3').value = data.cmd3Text;
+            if(data.aiSystemPrompt) {
+                aiSystemPrompt = data.aiSystemPrompt;
+                document.getElementById('ai-prompt').value = data.aiSystemPrompt;
+            }
+        }
+    
         function loadConfigFromGitHub() {
-            // Load from GitHub asynchronously in background without blocking UI
-            // Use jsDelivr CDN for faster delivery + cache busting with timestamp
-            const timestamp = new Date().getTime();
-            const cdnUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${CONFIG_FILE_PATH}?t=${timestamp}`;
-            fetch(cdnUrl, { cache: 'no-store' })
+            // REAL-TIME UPDATE: Fetch directly from GitHub API to bypass all caches
+            // This ensures data is updated the INSTANT it is pushed to GitHub
+            const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CONFIG_FILE_PATH}?ref=${GITHUB_BRANCH}`;
+            
+            fetch(apiUrl, { 
+                headers: { 'Accept': 'application/vnd.github.v3.raw' },
+                cache: 'no-store' 
+            })
                 .then(response => response.ok ? response.json() : null)
                 .then(data => {
                     if (data) {
