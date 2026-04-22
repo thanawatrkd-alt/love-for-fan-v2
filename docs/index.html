@@ -200,6 +200,10 @@
                     <input type="file" id="up-video" accept="video/*" class="file-input">
                 </div>
                 <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ชื่อบอท (Bot Name) 🤖</label>
+                    <input type="text" id="admin-bot-name" class="file-input" placeholder="เช่น ลาฟ, AI My Love">
+                </div>
+                <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความใน Card 📝</label>
                     <textarea id="admin-message" class="file-input" style="height: 80px; resize: vertical; padding: 10px;" placeholder="ใส่ข้อความหวานๆ ที่นี่..."></textarea>
                 </div>
@@ -290,17 +294,17 @@
 
             <!-- AI Chat Section -->
             <div class="px-4">
-                <h3 class="font-cute text-3xl text-center text-pink-500 mb-6">คุยกับลาฟ (AI) 💖</h3>
+                <h3 class="font-cute text-3xl text-center text-pink-500 mb-6">คุยกับ<span class="bot-name-display">ลาฟ</span> (AI) 💖</h3>
                 <div id="ai-chat-box" class="ai-chat-box mb-4">
-                    <div class="chat-message ai">สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอกลาฟไหม?</div>
+                    <div class="chat-message ai">สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอก<span class="bot-name-display">ลาฟ</span>ไหม?</div>
                 </div>
                 <div class="flex flex-wrap justify-center mb-4">
-                    <button class="ai-command-btn" onclick="askAI('ลาฟรักแฟนไหม?')">ลาฟรักแฟนไหม?</button>
-                    <button class="ai-command-btn" onclick="askAI('วันนี้เป็นยังไงบ้าง?')">วันนี้เป็นยังไงบ้าง?</button>
-                    <button class="ai-command-btn" onclick="askAI('ขอคำคมหวานๆ หน่อย')">ขอคำคมหวานๆ หน่อย</button>
+                    <button class="ai-command-btn bot-cmd-1" onclick="askAI('ลาฟรักแฟนไหม?')">ลาฟรักแฟนไหม?</button>
+                    <button class="ai-command-btn bot-cmd-2" onclick="askAI('วันนี้เป็นยังไงบ้าง?')">วันนี้เป็นยังไงบ้าง?</button>
+                    <button class="ai-command-btn bot-cmd-3" onclick="askAI('ขอคำคมหวานๆ หน่อย')">ขอคำคมหวานๆ หน่อย</button>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="ai-input" placeholder="พิมพ์ข้อความหาลาฟ..." class="flex-1 p-4 rounded-2xl border-2 border-pink-100 focus:border-pink-300 outline-none">
+                    <input type="text" id="ai-input" placeholder="พิมพ์ข้อความหา..." class="flex-1 p-4 rounded-2xl border-2 border-pink-100 focus:border-pink-300 outline-none">
                     <button onclick="handleAISubmit()" class="bg-pink-500 text-white px-6 rounded-2xl hover:bg-pink-600 transition-all">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -336,6 +340,12 @@
             const apiKey = document.getElementById('ai-api-key').value;
             const groqKey = document.getElementById('groq-api-key').value;
             const message = document.getElementById('admin-message').value;
+            const botName = document.getElementById('admin-bot-name').value;
+
+            if(botName) {
+                localStorage.setItem('botName', botName);
+                updateBotNameDisplay(botName);
+            }
 
             if(message) {
                 localStorage.setItem('customMessage', message);
@@ -453,6 +463,13 @@
             if(savedMessage) {
                 document.getElementById('display-message').innerText = savedMessage;
                 document.getElementById('admin-message').value = savedMessage;
+            }
+
+            // Load Bot Name
+            const savedBotName = localStorage.getItem('botName');
+            if(savedBotName) {
+                document.getElementById('admin-bot-name').value = savedBotName;
+                updateBotNameDisplay(savedBotName);
             }
 
             // Load gallery
@@ -586,6 +603,28 @@
                 errorMsg.textContent = `ขออภัย เกิดข้อผิดพลาด: ${error.message} 😢`;
                 chatBox.appendChild(errorMsg);
                 chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function updateBotNameDisplay(name) {
+            document.querySelectorAll('.bot-name-display').forEach(el => el.innerText = name);
+            document.getElementById('ai-input').placeholder = `พิมพ์ข้อความหา${name}...`;
+            
+            // Update quick command buttons
+            const cmd1 = document.querySelector('.bot-cmd-1');
+            if(cmd1) {
+                cmd1.innerText = `${name}รักแฟนไหม?`;
+                cmd1.setAttribute('onclick', `askAI('${name}รักแฟนไหม?')`);
+            }
+            const cmd2 = document.querySelector('.bot-cmd-2');
+            if(cmd2) {
+                cmd2.innerText = `วันนี้เป็นยังไงบ้าง?`;
+                cmd2.setAttribute('onclick', `askAI('วันนี้เป็นยังไงบ้าง?')`);
+            }
+            const cmd3 = document.querySelector('.bot-cmd-3');
+            if(cmd3) {
+                cmd3.innerText = `ขอคำคมหวานๆ หน่อย`;
+                cmd3.setAttribute('onclick', `askAI('ขอคำคมหวานๆ หน่อย')`);
             }
         }
 
