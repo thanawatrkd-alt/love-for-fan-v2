@@ -400,6 +400,15 @@
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').innerText = "กำลังบันทึกข้อมูลไปยัง GitHub...";
 
+            // Get current photos from localStorage
+            const currentPhotos = [];
+            for(let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if(key && key.startsWith('photo-')) {
+                    currentPhotos.push(localStorage.getItem(key));
+                }
+            }
+
             // Prepare config object
             const config = {
                 mainTitle: mainTitle || 'My Sweetheart.',
@@ -412,9 +421,9 @@
                 cmd2Text: cmd2Text || 'วันนี้เป็นยังไงบ้าง?',
                 cmd3Text: cmd3Text || 'ขอคำคมหวานๆ หน่อย',
                 aiSystemPrompt: prompt || 'You are a helpful and friendly assistant. Respond in Thai language. You are speaking to your loved one.',
-                photos: [],
-                videoUrl: '',
-                musicUrl: ''
+                photos: currentPhotos,
+                videoUrl: localStorage.getItem('video') || '',
+                musicUrl: localStorage.getItem('music') || ''
             };
             
             // Save config to GitHub (non-blocking)
@@ -625,9 +634,14 @@
                     const imageData = localStorage.getItem(key);
                     const div = document.createElement('div');
                     const rot = (photoCount % 2 === 0 ? "-3deg" : "3deg");
-                    div.className = "photo-item";
+                    div.className = "photo-item relative group";
                     div.style.setProperty('--rot', rot);
-                    div.innerHTML = `<img src="${imageData}" alt="Memory photo">`;
+                    div.innerHTML = `
+                        <img src="${imageData}" alt="Memory photo">
+                        <button onclick="deletePhoto('${key}')" class="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg flex items-center justify-center">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    `;
                     grid.appendChild(div);
                     photoCount++;
                 }
@@ -842,6 +856,30 @@
             }
         }
 
+        function deletePhoto(key) {
+            if(confirm('คุณต้องการลบรูปภาพนี้ใช่หรือไม่?')) {
+                localStorage.removeItem(key);
+                
+                // If it's a URL from GitHub config, we need to update GitHub as well
+                const savedConfig = localStorage.getItem('githubConfig');
+                if (savedConfig) {
+                    try {
+                        const config = JSON.parse(savedConfig);
+                        const imageData = localStorage.getItem(key); // This might be null if already removed
+                        if (config.photos && config.photos.includes(imageData)) {
+                            config.photos = config.photos.filter(p => p !== imageData);
+                            saveConfigToGitHub(config);
+                        }
+                    } catch(e) {}
+                }
+                
+                loadAssets();
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 50, spread: 50, colors: ['#ff0000', '#ffb6c1'] });
+                }
+            }
+        }
+
         let ANNIVERSARY_DATE = new Date('2025-08-08T00:00:00');
         function startTimer() {
             const savedDate = localStorage.getItem('anniversaryDate');
@@ -944,6 +982,16 @@
                 .then(data => {
                     if (data) {
                         console.log('Loaded config from GitHub:', data);
+                        localStorage.setItem('githubConfig', JSON.stringify(data));
+                        
+                        // Load photos from GitHub config into localStorage if not already there
+                        if (data.photos && Array.isArray(data.photos)) {
+                            data.photos.forEach((url, index) => {
+                                const key = `photo-gh-${index}`;
+                                localStorage.setItem(key, url);
+                            });
+                        }
+
                         // Apply GitHub config to UI
                         if(data.mainTitle) {
                             document.getElementById('display-main-title').innerText = data.mainTitle;
