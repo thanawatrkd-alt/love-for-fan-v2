@@ -47,9 +47,18 @@
         /* Admin Modal */
         #admin-modal {
             display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5);
-            z-index: 5000; align-items: center; justify-content: center; padding: 20px;
+            z-index: 5000; align-items: center; justify-content: center; padding: 10px;
+            overflow-y: auto; /* Allow scrolling on the modal background if needed */
         }
-        .admin-box { background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; }
+        .admin-box { 
+            background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; 
+            max-height: 90vh; overflow-y: auto; /* Make the box itself scrollable */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        /* Custom scrollbar for admin box */
+        .admin-box::-webkit-scrollbar { width: 4px; }
+        .admin-box::-webkit-scrollbar-track { background: #fff5f7; }
+        .admin-box::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 10px; }
         .file-input { display: block; width: 100%; padding: 10px; background: #fff5f7; border: 1px dashed #f9a8d4; border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #db2777; }
     
         /* Settings Icon (Lock screen only) */
