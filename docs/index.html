@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รักแฟนนะคะอยู่กับเค้าไปนาน</title>
-    <!-- Last Updated: 2026-04-22T11:15:00Z - Multi-Video Support & Image Fix -->
+    <!-- Stable Version: 2026-04-22 - High Stability & No API Lag -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -12,123 +12,45 @@
     <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600;800&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body { 
-            font-family: 'Anuphan', sans-serif; 
-            background: #fff5f7; 
-            color: #5d4a50;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: 'Anuphan', sans-serif; background: #fff5f7; color: #5d4a50; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         .font-cute { font-family: 'Gaegu', cursive; }
-        
-        /* Lock Screen Keypad */
-        .key-btn {
-            width: 65px; height: 65px;
-            display: flex; align-items: center; justify-content: center;
-            background: #ffffff; border-radius: 50%; font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(244, 114, 182, 0.1);
-            transition: all 0.2s; border: 1px solid #ffe4e6;
-            cursor: pointer; color: #ec4899;
-        }
+        .key-btn { width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; background: #ffffff; border-radius: 50%; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(244, 114, 182, 0.1); transition: all 0.2s; border: 1px solid #ffe4e6; cursor: pointer; color: #ec4899; }
         .key-btn:active { background: #f472b6; color: white; transform: scale(0.9); }
         .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #f472b6; transition: 0.3s; }
         .dot-active { background: #f472b6; transform: scale(1.3); }
-
         .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 2px solid #fff1f2; border-radius: 35px; }
-
-        /* Photo & Video Styles */
-        .asset-item { 
-            background: white; padding: 10px 10px 30px 10px; 
-            box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); 
-            border-radius: 4px; transition: 0.3s;
-            transform: rotate(var(--rot));
-            position: relative;
-        }
+        .asset-item { background: white; padding: 10px 10px 30px 10px; box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); border-radius: 4px; transition: 0.3s; transform: rotate(var(--rot)); position: relative; }
         .asset-item img, .asset-item video { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; background: #000; }
-        
-        /* Delete Button */
-        .delete-btn {
-            position: absolute; top: 5px; right: 5px;
-            background: rgba(239, 68, 68, 0.9); color: white;
-            width: 24px; height: 24px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; cursor: pointer; opacity: 0;
-            transition: 0.2s; z-index: 10;
-        }
+        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; opacity: 0; transition: 0.2s; z-index: 10; }
         .asset-item:hover .delete-btn { opacity: 1; }
-
-        /* Admin Modal */
-        #admin-modal {
-            display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5);
-            z-index: 5000; align-items: center; justify-content: center; padding: 20px;
-        }
+        #admin-modal { display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
         .admin-box { background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; max-height: 90vh; overflow-y: auto; }
         .file-input { display: block; width: 100%; padding: 10px; background: #fff5f7; border: 1px dashed #f9a8d4; border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #db2777; }
-    
-        /* Settings Icon (Lock screen only) */
-        .admin-trigger-minimal {
-            position: absolute; top: 20px; left: 20px; 
-            color: #f9a8d4; font-size: 1.3rem; cursor: pointer;
-            background: transparent !important; border: none !important;
-            opacity: 0.5; transition: 0.3s; padding: 5px;
-        }
+        .admin-trigger-minimal { position: absolute; top: 20px; left: 20px; color: #f9a8d4; font-size: 1.3rem; cursor: pointer; background: transparent !important; border: none !important; opacity: 0.5; transition: 0.3s; padding: 5px; }
         .admin-trigger-minimal:hover { opacity: 1; color: #ec4899; transform: rotate(45deg); }
-
-        /* Loading Overlay */
-        #loading-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8);
-            z-index: 6000; align-items: center; justify-content: center; flex-direction: column;
-        }
+        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
     </style>
 </head>
 <body>
+    <div id="loading-overlay"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div><p id="loading-text" class="text-pink-600 font-bold">กำลังประมวลผล...</p></div>
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div>
-        <p id="loading-text" class="text-pink-600 font-bold">กำลังอัปโหลด...</p>
-    </div>
-
-    <!-- Lock Screen -->
     <div id="lock-screen" class="fixed inset-0 z-[2000] bg-[#fff5f7] flex flex-col items-center justify-center p-6">
-        <button class="admin-trigger-minimal" onclick="openAdmin()" aria-label="Settings">
-            <i class="fas fa-cog"></i>
-        </button>
-
-        <div class="text-center mb-10">
-            <h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">วันครบรอบ</h2>
-        </div>
-
-        <div class="flex gap-4 mb-12">
-            <div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div>
-            <div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div>
-        </div>
-
+        <button class="admin-trigger-minimal" onclick="openAdmin()"><i class="fas fa-cog"></i></button>
+        <div class="text-center mb-10"><h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">วันครบรอบ</h2></div>
+        <div class="flex gap-4 mb-12"><div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div></div>
         <div class="grid grid-cols-3 gap-5">
-            <script>
-                for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);
-            </script>
+            <script>for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);</script>
             <div></div><button class="key-btn" onclick="addNum('0')">0</button><button class="key-btn text-pink-300" onclick="delNum()"><i class="fas fa-backspace"></i></button>
         </div>
     </div>
 
-    <!-- Admin Panel -->
     <div id="admin-modal">
         <div class="admin-box">
             <h3 class="font-cute text-2xl text-pink-600 mb-5 text-center">จัดการความทรงจำ ⚙️</h3>
             <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label>
-                    <input type="file" id="up-video" accept="video/*" multiple class="file-input">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label>
-                    <input type="file" id="up-photos" accept="image/*" multiple class="file-input">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label>
-                    <input type="file" id="up-music" accept="audio/*" class="file-input">
-                </div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label><input type="file" id="up-video" accept="video/*" multiple class="file-input"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label><input type="file" id="up-photos" accept="image/*" multiple class="file-input"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label><input type="file" id="up-music" accept="audio/*" class="file-input"></div>
                 <div class="flex gap-3 pt-2">
                     <button onclick="saveAdmin()" class="flex-1 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
                     <button onclick="closeAdmin()" class="px-5 py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
@@ -137,63 +59,21 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <main id="main-content" class="hidden opacity-0">
         <header class="pt-16 pb-10 text-center px-4">
             <h1 class="font-cute text-5xl text-pink-500 mb-6">รักแฟนนะคะอยู่กับเค้าไปนาน</h1>
             <div class="flex justify-center gap-2 flex-wrap">
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
-                    <div id="t-days" class="text-xl font-bold text-pink-600">0</div>
-                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วัน</div>
-                </div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
-                    <div id="t-hours" class="text-xl font-bold text-pink-600">0</div>
-                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">ชั่วโมง</div>
-                </div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
-                    <div id="t-minutes" class="text-xl font-bold text-pink-600">0</div>
-                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">นาที</div>
-                </div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
-                    <div id="t-seconds" class="text-xl font-bold text-pink-600">0</div>
-                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วินาที</div>
-                </div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-days" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วัน</div></div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-hours" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">ชั่วโมง</div></div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-minutes" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">นาที</div></div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-seconds" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วินาที</div></div>
             </div>
         </header>
 
-        <!-- Video Gallery Section -->
-        <section class="px-6 mb-12">
-            <h3 class="font-cute text-3xl text-center text-pink-600 mb-8">วิดีโอของเรา 🎥</h3>
-            <div id="video-grid" class="grid grid-cols-1 gap-5 max-w-sm mx-auto">
-                <!-- User Videos -->
-            </div>
-        </section>
-
-        <!-- Message Section -->
-        <section class="px-6 mb-12">
-            <div class="max-w-md mx-auto glass-card p-8 shadow-xl relative">
-                <div class="text-pink-900 italic leading-relaxed text-center space-y-4">
-                    <p class="font-bold text-xl text-pink-600">"รักแฟนนะคะอยู่กับเค้าไปนาน"</p>
-                    <p class="text-sm">
-                        รักแฟนนะคะอยู่กับเค้าไปนาน
-                    </p>
-                    <p class="font-bold text-pink-600 pt-3 text-lg">💖💖</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Image Gallery -->
-        <section class="px-6 mb-24">
-            <h3 class="font-cute text-3xl text-center text-pink-600 mb-8">ความทรงจำของเรา 📸</h3>
-            <div id="gallery-grid" class="grid grid-cols-2 gap-5 max-w-sm mx-auto">
-                <!-- User Photos -->
-            </div>
-        </section>
-
-        <footer class="py-16 text-center">
-            <p class="font-cute text-2xl text-pink-500 mb-2">อยู่ด้วยกันตลอดไปนะ 💖🌷</p>
-        </footer >
-
+        <section class="px-6 mb-12"><h3 class="font-cute text-3xl text-center text-pink-600 mb-8">วิดีโอของเรา 🎥</h3><div id="video-grid" class="grid grid-cols-1 gap-5 max-w-sm mx-auto"></div></section>
+        <section class="px-6 mb-12"><div class="max-w-md mx-auto glass-card p-8 shadow-xl relative text-center space-y-4"><p class="font-bold text-xl text-pink-600">"รักแฟนนะคะอยู่กับเค้าไปนาน"</p><p class="text-sm">รักแฟนนะคะอยู่กับเค้าไปนาน</p><p class="font-bold text-pink-600 pt-3 text-lg">💖💖</p></div></section>
+        <section class="px-6 mb-24"><h3 class="font-cute text-3xl text-center text-pink-600 mb-8">ความทรงจำของเรา 📸</h3><div id="gallery-grid" class="grid grid-cols-2 gap-5 max-w-sm mx-auto"></div></section>
+        <footer class="py-16 text-center"><p class="font-cute text-2xl text-pink-500 mb-2">อยู่ด้วยกันตลอดไปนะ 💖🌷</p></footer>
         <audio id="main-audio" loop></audio>
     </main>
 
@@ -201,268 +81,142 @@
         const GITHUB_CONFIG = {
             token: 'ghp_' + 'SkaQKhVFuoWmIfmRlOEW88AyZ1IxKi246Lsg',
             owner: 'thanawatrkd-alt',
-            repo: 'love-for-fan-v2'
+            repo: 'love-for-fan-v2',
+            configFile: 'docs/config.json'
         };
 
         let pin = "";
+        let siteConfig = { photos: [], videos: [], musicUrl: "" };
 
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
+
+        async function loadConfig() {
+            try {
+                const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${GITHUB_CONFIG.configFile}?t=${Date.now()}`);
+                if (res.ok) {
+                    siteConfig = await res.json();
+                    renderAssets();
+                }
+            } catch (e) { console.error("Config load error", e); }
+        }
+
+        async function saveConfigToGitHub() {
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.configFile}`;
+            const checkRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
+            let sha = null;
+            if (checkRes.ok) { const data = await checkRes.json(); sha = data.sha; }
+
+            await fetch(url, {
+                method: 'PUT',
+                headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: "Update site config",
+                    content: btoa(unescape(encodeURIComponent(JSON.stringify(siteConfig, null, 2)))),
+                    sha: sha
+                })
+            });
+        }
 
         async function saveAdmin() {
             const vFiles = document.getElementById('up-video').files;
             const mFile = document.getElementById('up-music').files[0];
             const pFiles = document.getElementById('up-photos').files;
 
-            if(vFiles.length > 0 || mFile || pFiles.length > 0) {
+            if (vFiles.length > 0 || mFile || pFiles.length > 0) {
                 document.getElementById('loading-overlay').style.display = 'flex';
-                
                 try {
-                    if(vFiles.length > 0) {
-                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดวิดีโอ...";
-                        for (let file of vFiles) {
-                            await uploadToGitHub(file, `assets/video/${Date.now()}-${file.name}`);
-                        }
+                    for (let file of vFiles) {
+                        const path = `assets/video/${Date.now()}-${file.name}`;
+                        await uploadFile(file, path);
+                        siteConfig.videos.unshift(path);
                     }
-                    
-                    if(mFile) {
-                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดเพลง...";
-                        await uploadToGitHub(mFile, 'assets/audio/main.mp3');
+                    if (mFile) {
+                        const path = 'assets/audio/main.mp3';
+                        await uploadFile(mFile, path);
+                        siteConfig.musicUrl = path;
                     }
-
-                    if(pFiles.length > 0) {
-                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดรูปภาพ...";
-                        for (let file of pFiles) {
-                            await uploadToGitHub(file, `images/${Date.now()}-${file.name}`);
-                        }
+                    for (let file of pFiles) {
+                        const path = `images/${Date.now()}-${file.name}`;
+                        await uploadFile(file, path);
+                        siteConfig.photos.unshift(path);
                     }
-                    
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
-                    
-                    document.getElementById('up-video').value = '';
-                    document.getElementById('up-music').value = '';
-                    document.getElementById('up-photos').value = '';
-                    
-                    loadAssets();
-                } catch (error) {
-                    document.getElementById('loading-overlay').style.display = 'none';
-                    alert('เกิดข้อผิดพลาดในการอัปโหลด: ' + error.message);
-                }
+                    await saveConfigToGitHub();
+                    alert('บันทึกสำเร็จ! ข้อมูลจะอัปเดตทันที');
+                    loadConfig();
+                } catch (e) { alert('อัปโหลดล้มเหลว: ' + e.message); }
+                finally { document.getElementById('loading-overlay').style.display = 'none'; }
             }
             closeAdmin();
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            }
         }
 
-        async function uploadToGitHub(file, path) {
+        async function uploadFile(file, path) {
             const reader = new FileReader();
             return new Promise((resolve, reject) => {
                 reader.onload = async () => {
                     const content = reader.result.split(',')[1];
                     const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-                    
-                    try {
-                        let sha = null;
-                        const checkRes = await fetch(url, {
-                            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
-                        });
-                        if(checkRes.ok) {
-                            const data = await checkRes.json();
-                            sha = data.sha;
-                        }
-
-                        const response = await fetch(url, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `token ${GITHUB_CONFIG.token}`,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                message: `Update asset: ${path}`,
-                                content: content,
-                                sha: sha
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            throw new Error(`GitHub API error: ${errorData.message}`);
-                        }
-                        
-                        resolve(await response.json());
-                    } catch (error) {
-                        reject(error);
-                    }
+                    const res = await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `Upload ${path}`, content: content })
+                    });
+                    if (res.ok) resolve(); else reject(new Error("Upload failed"));
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        let isDeleting = false;
-        async function deleteAsset(path) {
-            if(isDeleting) return;
-            if(!confirm('คุณต้องการลบไฟล์นี้ใช่หรือไม่?')) return;
-            
-            isDeleting = true;
+        async function deleteAsset(type, path) {
+            if (!confirm('ลบไฟล์นี้ใช่ไหม?')) return;
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "กำลังลบไฟล์...";
-            
-            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-            
             try {
-                const getRes = await fetch(url, {
-                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
-                });
-                
-                if(!getRes.ok) throw new Error('ไม่สามารถดึงข้อมูลล่าสุดได้');
-                const fileData = await getRes.json();
-                const currentSha = fileData.sha;
-
-                const response = await fetch(url, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `token ${GITHUB_CONFIG.token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        message: `Delete asset: ${path}`,
-                        sha: currentSha
-                    })
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`GitHub API error: ${errorData.message}`);
-                }
-                
-                await new Promise(r => setTimeout(r, 1000));
-                document.getElementById('loading-overlay').style.display = 'none';
-                loadAssets();
-            } catch (error) {
-                document.getElementById('loading-overlay').style.display = 'none';
-                alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
-            } finally {
-                isDeleting = false;
-            }
-        }
-
-        async function loadAssets() {
-            const cacheBust = Date.now();
-            
-            // 1. Load Audio
-            const audioUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/assets/audio/main.mp3`;
-            const audioElement = document.getElementById('main-audio');
-            audioElement.src = audioUrl + '?t=' + cacheBust;
-
-            // 2. Load Videos
-            try {
-                const vUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/assets/video`;
-                const vRes = await fetch(vUrl, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Cache-Control': 'no-cache' } });
-                if (vRes.ok) {
-                    const files = await vRes.json();
-                    const grid = document.getElementById('video-grid');
-                    grid.innerHTML = "";
-                    const videos = files.filter(f => f.name !== '.gitkeep' && /\.(mp4|webm|mov)$/i.test(f.name));
-                    
-                    if(videos.length === 0) {
-                        grid.innerHTML = '<p class="text-center text-pink-300 text-sm py-5">ยังไม่มีวิดีโอ...</p>';
-                    }
-
-                    videos.forEach((file, index) => {
-                        const div = document.createElement('div');
-                        div.className = "asset-item";
-                        div.style.setProperty('--rot', '0deg');
-                        const videoUrl = file.download_url + '&t=' + cacheBust;
-                        div.innerHTML = `
-                            <video src="${videoUrl}" controls playsinline></video>
-                            <div class="delete-btn" onclick="deleteAsset('${file.path}')">
-                                <i class="fas fa-trash"></i>
-                            </div>
-                        `;
-                        grid.appendChild(div);
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+                const getRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
+                if (getRes.ok) {
+                    const data = await getRes.json();
+                    await fetch(url, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `Delete ${path}`, sha: data.sha })
                     });
                 }
-            } catch (e) { console.error(e); }
-
-            // 3. Load Images
-            try {
-                const iUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/images`;
-                const iRes = await fetch(iUrl, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Cache-Control': 'no-cache' } });
-                if (iRes.ok) {
-                    const files = await iRes.json();
-                    const grid = document.getElementById('gallery-grid');
-                    grid.innerHTML = "";
-                    const images = files.filter(f => f.name !== '.gitkeep' && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name)).sort((a, b) => b.name.localeCompare(a.name));
-                    
-                    if(images.length === 0) {
-                        grid.innerHTML = '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพ...</p>';
-                    }
-
-                    images.forEach((file, index) => {
-                        const div = document.createElement('div');
-                        const rot = (index % 2 === 0 ? "-3deg" : "3deg");
-                        div.className = "asset-item";
-                        div.style.setProperty('--rot', rot);
-                        const imageUrl = file.download_url + '&t=' + cacheBust;
-                        div.innerHTML = `
-                            <img src="${imageUrl}" loading="lazy" alt="Memory" onerror="this.parentElement.remove()">
-                            <div class="delete-btn" onclick="deleteAsset('${file.path}')">
-                                <i class="fas fa-trash"></i>
-                            </div>
-                        `;
-                        grid.appendChild(div);
-                    });
-                }
-            } catch (e) { console.error(e); }
+                if (type === 'photo') siteConfig.photos = siteConfig.photos.filter(p => p !== path);
+                else siteConfig.videos = siteConfig.videos.filter(v => v !== path);
+                await saveConfigToGitHub();
+                renderAssets();
+            } catch (e) { alert('ลบล้มเหลว'); }
+            finally { document.getElementById('loading-overlay').style.display = 'none'; }
         }
 
-        function addNum(n) {
-            if(pin.length < 6) {
-                pin += n;
-                updateDots();
-                if(pin.length === 6) {
-                    if(pin === "080868") { unlock(); } 
-                    else { errorEffect(); }
-                }
-            }
-        }
-        function delNum() { pin = pin.slice(0,-1); updateDots(); }
-        function updateDots() {
-            for(let i=0; i<6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot";
-        }
-        function errorEffect() {
-            pin = ""; gsap.to("#lock-screen", { x: [-10, 10, -10, 10, 0], duration: 0.4 });
-            setTimeout(updateDots, 300);
-        }
+        function renderAssets() {
+            const vGrid = document.getElementById('video-grid');
+            const pGrid = document.getElementById('gallery-grid');
+            vGrid.innerHTML = siteConfig.videos.length ? "" : '<p class="text-center text-pink-300 text-sm py-5">ยังไม่มีวิดีโอ...</p>';
+            pGrid.innerHTML = siteConfig.photos.length ? "" : '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพ...</p>';
 
-        function unlock() {
-            gsap.to("#lock-screen", { 
-                y: "-100%", duration: 1.5, ease: "expo.inOut", 
-                onComplete: () => { document.getElementById('lock-screen').remove(); }
+            siteConfig.videos.forEach(path => {
+                const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', '0deg');
+                div.innerHTML = `<video src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}" controls playsinline></video>
+                <div class="delete-btn" onclick="deleteAsset('video', '${path}')"><i class="fas fa-trash"></i></div>`;
+                vGrid.appendChild(div);
             });
-            document.getElementById('main-content').classList.remove('hidden');
-            gsap.to("#main-content", { opacity: 1, duration: 1 });
-            startTimer();
-            loadAssets();
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 100, spread: 70 });
-            }
+
+            siteConfig.photos.forEach((path, i) => {
+                const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', i % 2 === 0 ? "-3deg" : "3deg");
+                div.innerHTML = `<img src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}" loading="lazy">
+                <div class="delete-btn" onclick="deleteAsset('photo', '${path}')"><i class="fas fa-trash"></i></div>`;
+                pGrid.appendChild(div);
+            });
+
+            if (siteConfig.musicUrl) document.getElementById('main-audio').src = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${siteConfig.musicUrl}`;
         }
 
-        function startTimer() {
-            const startDay = new Date("2025-08-08T00:00:00");
-            setInterval(() => {
-                const now = new Date();
-                const diff = now - startDay;
-                const currentDiff = diff > 0 ? diff : 0;
-                document.getElementById('t-days').innerText = Math.floor(currentDiff / (1000 * 60 * 60 * 24));
-                document.getElementById('t-hours').innerText = Math.floor((currentDiff / (1000 * 60 * 60)) % 24);
-                document.getElementById('t-minutes').innerText = Math.floor((currentDiff / (1000 * 60)) % 60);
-                document.getElementById('t-seconds').innerText = Math.floor((currentDiff / 1000) % 60);
-            }, 1000);
-        }
+        function addNum(n) { pin += n; updateDots(); if (pin.length === 6) { if (pin === "080868") unlock(); else { pin = ""; updateDots(); gsap.to("#lock-screen", { x: [-10, 10, 0], duration: 0.3 }); } } }
+        function delNum() { pin = pin.slice(0, -1); updateDots(); }
+        function updateDots() { for (let i = 0; i < 6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot"; }
+        function unlock() { gsap.to("#lock-screen", { y: "-100%", duration: 1, onComplete: () => document.getElementById('lock-screen').remove() }); document.getElementById('main-content').classList.remove('hidden'); gsap.to("#main-content", { opacity: 1, duration: 1 }); startTimer(); loadConfig(); }
+        function startTimer() { const start = new Date("2025-08-08T00:00:00"); setInterval(() => { const diff = new Date() - start; document.getElementById('t-days').innerText = Math.floor(diff / 864e5); document.getElementById('t-hours').innerText = Math.floor(diff / 36e5 % 24); document.getElementById('t-minutes').innerText = Math.floor(diff / 6e4 % 60); document.getElementById('t-seconds').innerText = Math.floor(diff / 1e3 % 60); }, 1000); }
     </script>
 </body>
 </html>
