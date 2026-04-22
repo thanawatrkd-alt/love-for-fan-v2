@@ -379,7 +379,7 @@
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
 
-        async function saveAdmin() {
+        function saveAdmin() {
             const vFile = document.getElementById('up-video').files[0];
             const pFiles = document.getElementById('up-photos').files;
             const mFile = document.getElementById('up-music').files[0];
@@ -417,13 +417,8 @@
                 musicUrl: ''
             };
             
-            // Save config to GitHub
-            try {
-                await saveConfigToGitHub(config);
-            } catch (error) {
-                console.error('Error saving to GitHub:', error);
-                alert('Warning: Could not save to GitHub, but data saved locally.');
-            }
+            // Save config to GitHub (non-blocking)
+            saveConfigToGitHub(config);
             
             // Save to localStorage
             if(spotifyUrl !== undefined) {
@@ -865,36 +860,46 @@
         }
 
         // Function to save config to GitHub via backend API
-        async function saveConfigToGitHub(config) {
+        function saveConfigToGitHub(config) {
+            // Try to save to backend, but don't block UI if it fails
             try {
-                // Use backend API to save config
-                const response = await fetch('/api/trpc/love.saveConfig', {
+                // Use backend API to save config with timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+                
+                fetch('/api/trpc/love.saveConfig', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
                         json: config
-                    })
+                    }),
+                    signal: controller.signal
+                })
+                .then(response => {
+                    clearTimeout(timeoutId);
+                    if (!response.ok) {
+                        console.warn('Backend save failed, using localStorage only');
+                    }
+                })
+                .catch(error => {
+                    clearTimeout(timeoutId);
+                    console.warn('Could not save to GitHub backend:', error);
                 });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to save config via backend');
-                }
-                
-                return true;
             } catch (error) {
-                console.error('GitHub save error:', error);
-                // Fallback to localStorage only
-                console.warn('Could not save to GitHub, using localStorage only');
-                return false;
+                console.error('Save error:', error);
             }
+            return true; // Always return true to not block UI
         }
         
         // Function to load config from GitHub
         function loadConfigFromGitHub() {
             // Load from GitHub asynchronously in background without blocking UI
-            fetch(`https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CONFIG_FILE_PATH}`, { cache: 'no-cache' })
+            // Use jsDelivr CDN for faster delivery + cache busting with timestamp
+            const timestamp = new Date().getTime();
+            const cdnUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${CONFIG_FILE_PATH}?t=${timestamp}`;
+            fetch(cdnUrl, { cache: 'no-store' })
                 .then(response => response.ok ? response.json() : null)
                 .then(data => {
                     if (data) {
