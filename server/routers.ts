@@ -47,6 +47,92 @@ export const appRouter = router({
         }
       }),
   }),
+
+  // Love for Fan config management
+  love: router({
+    saveConfig: publicProcedure
+      .input(z.object({
+        mainTitle: z.string().optional(),
+        botName: z.string().optional(),
+        anniversaryDate: z.string().optional(),
+        customMessage: z.string().optional(),
+        botGreeting: z.string().optional(),
+        spotifyUrl: z.string().optional(),
+        cmd1Text: z.string().optional(),
+        cmd2Text: z.string().optional(),
+        cmd3Text: z.string().optional(),
+        aiSystemPrompt: z.string().optional(),
+        photos: z.array(z.string()).optional(),
+        videoUrl: z.string().optional(),
+        musicUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Get GitHub token from environment
+          const githubToken = process.env.GITHUB_TOKEN;
+          if (!githubToken) {
+            console.warn('GITHUB_TOKEN not set, config saved to localStorage only');
+            return { success: true, savedToGitHub: false };
+          }
+
+          const owner = 'thanawatrkd-alt';
+          const repo = 'love-for-fan-v2';
+          const branch = 'main';
+          const filePath = 'docs/config.json';
+
+          // Get current file SHA
+          const getResponse = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+            {
+              headers: {
+                'Authorization': `token ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+              },
+            }
+          );
+
+          let sha = null;
+          if (getResponse.ok) {
+            const data = await getResponse.json();
+            sha = data.sha;
+          }
+
+          // Prepare content
+          const content = JSON.stringify(input, null, 2);
+          const encodedContent = Buffer.from(content).toString('base64');
+
+          // Update file on GitHub
+          const updateResponse = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': `token ${githubToken}`,
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                message: `Update Love for Fan config - ${new Date().toLocaleString('th-TH')}`,
+                content: encodedContent,
+                branch: branch,
+                sha: sha,
+              }),
+            }
+          );
+
+          if (!updateResponse.ok) {
+            const error = await updateResponse.json();
+            console.error('GitHub API error:', error);
+            return { success: false, error: error.message || 'Failed to save to GitHub' };
+          }
+
+          return { success: true, savedToGitHub: true };
+        } catch (error) {
+          console.error('Error saving config:', error);
+          return { success: false, error: String(error) };
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

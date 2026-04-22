@@ -1,0 +1,15 @@
+{
+  "mainTitle": "My Sweetheart.",
+  "botName": "Love Bot",
+  "anniversaryDate": "2025-08-08T00:00:00",
+  "customMessage": "ความทรงจำที่สวยงามของเรา",
+  "botGreeting": "สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอกไหม?",
+  "spotifyUrl": "",
+  "cmd1Text": "รักเค้าไหม?",
+  "cmd2Text": "วันนี้เป็นยังไงบ้าง?",
+  "cmd3Text": "ขอคำคมหวานๆ หน่อย",
+  "aiSystemPrompt": "You are a helpful and friendly assistant. Respond in Thai language. You are speaking to your loved one.",
+  "photos": [],
+  "videoUrl": "",
+  "musicUrl": ""
+}
