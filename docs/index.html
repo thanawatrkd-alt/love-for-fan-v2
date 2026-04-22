@@ -200,6 +200,10 @@
                     <input type="file" id="up-video" accept="video/*" class="file-input">
                 </div>
                 <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความใน Card 📝</label>
+                    <textarea id="admin-message" class="file-input" style="height: 80px; resize: vertical; padding: 10px;" placeholder="ใส่ข้อความหวานๆ ที่นี่..."></textarea>
+                </div>
+                <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label>
                     <input type="file" id="up-photos" accept="image/*" multiple class="file-input">
                 </div>
@@ -270,7 +274,7 @@
             <!-- Message Card -->
             <div class="glass-card p-8 text-center shadow-xl shadow-pink-100 mx-4">
                 <i class="fas fa-quote-left text-pink-200 text-3xl mb-4"></i>
-                <p class="text-lg leading-relaxed text-gray-600 italic">
+                <p id="display-message" class="text-lg leading-relaxed text-gray-600 italic">
                     "ลาฟรักแฟนมากนะ รักมากจริงๆ" อยากให้แฟนรู้ว่าที่ผ่านมาทุกอย่างลาฟตั้งใจรักแฟนเต็มที่เลย ขอบคุณนะที่อยู่กับลาฟมาจนถึงวันนี้
                 </p>
                 <i class="fas fa-heart text-pink-400 mt-6 block"></i>
@@ -331,6 +335,12 @@
             const prompt = document.getElementById('ai-prompt').value;
             const apiKey = document.getElementById('ai-api-key').value;
             const groqKey = document.getElementById('groq-api-key').value;
+            const message = document.getElementById('admin-message').value;
+
+            if(message) {
+                localStorage.setItem('customMessage', message);
+                document.getElementById('display-message').innerText = message;
+            }
 
             if(prompt) {
                 localStorage.setItem('aiSystemPrompt', prompt);
@@ -436,6 +446,13 @@
             const savedGroqKey = localStorage.getItem('groqApiKey');
             if(savedGroqKey) {
                 document.getElementById('groq-api-key').value = savedGroqKey;
+            }
+
+            // Load Custom Message
+            const savedMessage = localStorage.getItem('customMessage');
+            if(savedMessage) {
+                document.getElementById('display-message').innerText = savedMessage;
+                document.getElementById('admin-message').value = savedMessage;
             }
 
             // Load gallery
