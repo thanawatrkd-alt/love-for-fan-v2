@@ -1,19 +1,5 @@
 {
-  "anniversaryDate": "2025-08-08T00:00:00",
-  "customMessage": "รักแฟนนะคะอยู่กับเค้าไปนาน",
-  "photos": [
-    "images/1776871099526-1000054976.jpg",
-    "images/1776869620413-1000058671.jpg",
-    "images/1776869862191-1000058661.jpg",
-    "images/1776869982804-1000058668.png",
-    "images/1776870575274-1000058648.jpg",
-    "images/1776870814127-1000058652.png"
-  ],
-  "videos": [
-    "assets/video/main.mp4",
-    "assets/video/1776870804603-1000054977.mp4",
-    "assets/video/1776870824512-1000054977.mp4"
-  ],
-  "musicUrl": "assets/audio/main.mp3",
-  "lastUpdated": "2026-04-22T11:50:00Z"
+  "photos": [],
+  "videos": [],
+  "musicUrl": ""
 }
