@@ -843,7 +843,9 @@
                 pin += n;
                 updateDots();
                 if(pin.length === 6) {
-                    if(pin === PASSWORD) { unlock(); } 
+                    if(pin === PASSWORD) { 
+                        unlock().catch(err => console.error('Unlock error:', err));
+                    } 
                     else { errorEffect(); }
                 }
             }
@@ -857,7 +859,7 @@
             setTimeout(updateDots, 300);
         }
 
-        function unlock() {
+        async function unlock() {
             gsap.to("#lock-screen", { 
                 y: "-100%", duration: 1.5, ease: "expo.inOut", 
                 onComplete: () => { document.getElementById('lock-screen').remove(); }
@@ -926,12 +928,16 @@
         async function loadConfigFromGitHub() {
             try {
                 const response = await fetch(
-                    `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CONFIG_FILE_PATH}`
+                    `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${CONFIG_FILE_PATH}`,
+                    { cache: 'no-cache' }
                 );
                 
                 if (response.ok) {
-                    return await response.json();
+                    const data = await response.json();
+                    console.log('Loaded config from GitHub:', data);
+                    return data;
                 }
+                console.warn('GitHub config not found, using defaults');
                 return null;
             } catch (error) {
                 console.error('GitHub load error:', error);
