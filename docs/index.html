@@ -388,21 +388,24 @@
         async function loadAssets() {
             const cacheBust = Date.now();
             
-            // Load Video
-            const videoUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/video/main.mp4`;
+            // 1. Load Video (Using GitHub Raw to avoid CDN cache)
+            const videoUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/assets/video/main.mp4`;
             const videoElement = document.getElementById('main-video');
             videoElement.src = videoUrl + '?t=' + cacheBust;
 
-            // Load Audio
-            const audioUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/audio/main.mp3`;
+            // 2. Load Audio (Using GitHub Raw)
+            const audioUrl = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/assets/audio/main.mp3`;
             const audioElement = document.getElementById('main-audio');
             audioElement.src = audioUrl + '?t=' + cacheBust;
 
-            // Load Gallery
+            // 3. Load Gallery (Fetch direct from API to ensure only existing files are shown)
             const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/images`;
             try {
                 const response = await fetch(url, {
-                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                    headers: { 
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Cache-Control': 'no-cache'
+                    }
                 });
                 
                 if (response.ok) {
@@ -411,17 +414,25 @@
                         const grid = document.getElementById('gallery-grid');
                         grid.innerHTML = "";
                         
+                        // Filter out .gitkeep and non-image files
                         const images = files.filter(f => f.name !== '.gitkeep' && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
                                            .sort((a, b) => b.name.localeCompare(a.name));
+
+                        if (images.length === 0) {
+                            grid.innerHTML = '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพในความทรงจำ...</p>';
+                        }
 
                         images.forEach((file, index) => {
                             const div = document.createElement('div');
                             const rot = (index % 2 === 0 ? "-3deg" : "3deg");
                             div.className = "photo-item";
                             div.style.setProperty('--rot', rot);
-                            const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/${file.path}?t=${cacheBust}`;
+                            
+                            // Using download_url from GitHub API which is a direct raw link
+                            const imageUrl = file.download_url + (file.download_url.includes('?') ? '&' : '?') + 't=' + cacheBust;
+                            
                             div.innerHTML = `
-                                <img src="${imageUrl}" loading="lazy" alt="Memory photo">
+                                <img src="${imageUrl}" loading="lazy" alt="Memory photo" onerror="this.parentElement.remove()">
                                 <div class="delete-btn" onclick="deletePhoto('${file.path}')">
                                     <i class="fas fa-trash"></i>
                                 </div>
@@ -429,6 +440,8 @@
                             grid.appendChild(div);
                         });
                     }
+                } else if (response.status === 404) {
+                    document.getElementById('gallery-grid').innerHTML = '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพในความทรงจำ...</p>';
                 }
             } catch (error) {
                 console.error('Failed to load gallery:', error);
