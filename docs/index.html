@@ -192,19 +192,20 @@
         function renderAssets() {
             const vGrid = document.getElementById('video-grid');
             const pGrid = document.getElementById('gallery-grid');
+            const cacheBuster = `?t=${Date.now()}`;
             vGrid.innerHTML = siteConfig.videos.length ? "" : '<p class="text-center text-pink-300 text-sm py-5">ยังไม่มีวิดีโอ...</p>';
             pGrid.innerHTML = siteConfig.photos.length ? "" : '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพ...</p>';
 
             siteConfig.videos.forEach(path => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', '0deg');
-                div.innerHTML = `<video src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}" controls playsinline></video>
+                div.innerHTML = `<video src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}${cacheBuster}" controls playsinline></video>
                 <div class="delete-btn" onclick="deleteAsset('video', '${path}')"><i class="fas fa-trash"></i></div>`;
                 vGrid.appendChild(div);
             });
 
             siteConfig.photos.forEach((path, i) => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', i % 2 === 0 ? "-3deg" : "3deg");
-                div.innerHTML = `<img src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}" loading="lazy">
+                div.innerHTML = `<img src="https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${path}${cacheBuster}" loading="lazy">
                 <div class="delete-btn" onclick="deleteAsset('photo', '${path}')"><i class="fas fa-trash"></i></div>`;
                 pGrid.appendChild(div);
             });
