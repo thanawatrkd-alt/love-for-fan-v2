@@ -209,8 +209,16 @@
                     <input type="file" id="up-video" accept="video/*" class="file-input">
                 </div>
                 <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">หัวข้อหลัก (Main Title) ✨</label>
+                    <input type="text" id="admin-main-title" class="file-input" placeholder="เช่น My Sweetheart.">
+                </div>
+                <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ชื่อบอท (Bot Name) 🤖</label>
                     <input type="text" id="admin-bot-name" class="file-input" placeholder="เช่น ลาฟ, AI My Love">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วันที่เริ่มต้น (Anniversary) 📅</label>
+                    <input type="datetime-local" id="admin-start-date" class="file-input">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความใน Card 📝</label>
@@ -223,6 +231,22 @@
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label>
                     <input type="file" id="up-music" accept="audio/*" class="file-input">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความทักทายของบอท 👋</label>
+                    <input type="text" id="admin-bot-greeting" class="file-input" placeholder="เช่น สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอกไหม?">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 1 ⚡</label>
+                    <input type="text" id="admin-cmd-1" class="file-input" placeholder="เช่น รักเค้าไหม?">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 2 ⚡</label>
+                    <input type="text" id="admin-cmd-2" class="file-input" placeholder="เช่น วันนี้เป็นยังไงบ้าง?">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 3 ⚡</label>
+                    <input type="text" id="admin-cmd-3" class="file-input" placeholder="เช่น ขอคำคมหวานๆ หน่อย">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">AI System Prompt</label>
@@ -253,7 +277,7 @@
     <!-- Main Content -->
     <main id="main-content" class="hidden opacity-0">
         <header class="pt-16 pb-10 text-center px-4">
-            <h1 class="font-cute text-5xl text-pink-500 mb-6">My Sweetheart.</h1>
+            <h1 id="display-main-title" class="font-cute text-5xl text-pink-500 mb-6">My Sweetheart.</h1>
             <div class="flex justify-center gap-2 flex-wrap">
                 <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
                     <div id="t-days" class="text-xl font-bold text-pink-600">0</div>
@@ -350,6 +374,31 @@
             const groqKey = document.getElementById('groq-api-key').value;
             const message = document.getElementById('admin-message').value;
             const botName = document.getElementById('admin-bot-name').value;
+            const mainTitle = document.getElementById('admin-main-title').value;
+            const startDate = document.getElementById('admin-start-date').value;
+            const botGreeting = document.getElementById('admin-bot-greeting').value;
+            const cmd1Text = document.getElementById('admin-cmd-1').value;
+            const cmd2Text = document.getElementById('admin-cmd-2').value;
+            const cmd3Text = document.getElementById('admin-cmd-3').value;
+
+            if(mainTitle) {
+                localStorage.setItem('mainTitle', mainTitle);
+                document.getElementById('display-main-title').innerText = mainTitle;
+            }
+
+            if(startDate) {
+                localStorage.setItem('anniversaryDate', startDate);
+                ANNIVERSARY_DATE = new Date(startDate);
+            }
+
+            if(botGreeting) {
+                localStorage.setItem('botGreeting', botGreeting);
+                document.querySelector('#ai-chat-box .chat-message.ai').innerText = botGreeting;
+            }
+
+            if(cmd1Text) localStorage.setItem('cmd1Text', cmd1Text);
+            if(cmd2Text) localStorage.setItem('cmd2Text', cmd2Text);
+            if(cmd3Text) localStorage.setItem('cmd3Text', cmd3Text);
 
             if(botName) {
                 localStorage.setItem('botName', botName);
@@ -480,6 +529,34 @@
                 document.getElementById('admin-bot-name').value = savedBotName;
                 updateBotNameDisplay(savedBotName);
             }
+
+            // Load Main Title
+            const savedTitle = localStorage.getItem('mainTitle');
+            if(savedTitle) {
+                document.getElementById('display-main-title').innerText = savedTitle;
+                document.getElementById('admin-main-title').value = savedTitle;
+            }
+
+            // Load Anniversary Date
+            const savedAnniversary = localStorage.getItem('anniversaryDate');
+            if(savedAnniversary) {
+                document.getElementById('admin-start-date').value = savedAnniversary;
+            }
+
+            // Load Bot Greeting
+            const savedGreeting = localStorage.getItem('botGreeting');
+            if(savedGreeting) {
+                document.querySelector('#ai-chat-box .chat-message.ai').innerText = savedGreeting;
+                document.getElementById('admin-bot-greeting').value = savedGreeting;
+            }
+
+            // Load Commands
+            const c1 = localStorage.getItem('cmd1Text');
+            if(c1) document.getElementById('admin-cmd-1').value = c1;
+            const c2 = localStorage.getItem('cmd2Text');
+            if(c2) document.getElementById('admin-cmd-2').value = c2;
+            const c3 = localStorage.getItem('cmd3Text');
+            if(c3) document.getElementById('admin-cmd-3').value = c3;
 
             // Load gallery
             const grid = document.getElementById('gallery-grid');
@@ -622,18 +699,21 @@
             // Update quick command buttons
             const cmd1 = document.querySelector('.bot-cmd-1');
             if(cmd1) {
-                cmd1.innerText = `${name}รักแฟนไหม?`;
-                cmd1.setAttribute('onclick', `askAI('${name}รักแฟนไหม?')`);
+                const customCmd1 = localStorage.getItem('cmd1Text');
+                cmd1.innerText = customCmd1 || `${name}รักแฟนไหม?`;
+                cmd1.setAttribute('onclick', `askAI('${customCmd1 || name + 'รักแฟนไหม?'}')`);
             }
             const cmd2 = document.querySelector('.bot-cmd-2');
             if(cmd2) {
-                cmd2.innerText = `วันนี้เป็นยังไงบ้าง?`;
-                cmd2.setAttribute('onclick', `askAI('วันนี้เป็นยังไงบ้าง?')`);
+                const customCmd2 = localStorage.getItem('cmd2Text');
+                cmd2.innerText = customCmd2 || `วันนี้เป็นยังไงบ้าง?`;
+                cmd2.setAttribute('onclick', `askAI('${customCmd2 || 'วันนี้เป็นยังไงบ้าง?'}')`);
             }
             const cmd3 = document.querySelector('.bot-cmd-3');
             if(cmd3) {
-                cmd3.innerText = `ขอคำคมหวานๆ หน่อย`;
-                cmd3.setAttribute('onclick', `askAI('ขอคำคมหวานๆ หน่อย')`);
+                const customCmd3 = localStorage.getItem('cmd3Text');
+                cmd3.innerText = customCmd3 || `ขอคำคมหวานๆ หน่อย`;
+                cmd3.setAttribute('onclick', `askAI('${customCmd3 || 'ขอคำคมหวานๆ หน่อย'}')`);
             }
         }
 
@@ -678,12 +758,14 @@
             }
         }
 
+        let ANNIVERSARY_DATE = new Date('2025-08-08T00:00:00');
         function startTimer() {
-            const startDay = new Date('2025-08-08T00:00:00');
+            const savedDate = localStorage.getItem('anniversaryDate');
+            if(savedDate) ANNIVERSARY_DATE = new Date(savedDate);
             
             setInterval(() => {
                 const now = new Date();
-                const diff = now - startDay;
+                const diff = now - ANNIVERSARY_DATE;
                 const currentDiff = diff > 0 ? diff : 0;
                 
                 document.getElementById('t-days').innerText = Math.floor(currentDiff / (1000 * 60 * 60 * 24));
