@@ -1,10 +1,8 @@
 {
   "photos": [
-    "images/1776873980068-1000054992.jpg",
-    "images/1776873977-favorite.jpg"
+    "https://img1.pic.in.th/images/1000054992.jpg",
+    "images/1776874158750-1000054992.jpg"
   ],
-  "videos": [
-    "assets/video/1776873161694-1000054991.mp4"
-  ],
+  "videos": [],
   "musicUrl": ""
 }
