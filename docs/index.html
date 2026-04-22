@@ -50,6 +50,7 @@
             <div class="space-y-4">
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label><input type="file" id="up-video" accept="video/*" multiple class="file-input"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label><input type="file" id="up-photos" accept="image/*" multiple class="file-input"></div>
+                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ใส่รูปผ่านลิงก์ (URL) 🔗</label><input type="text" id="up-photo-url" placeholder="https://example.com/image.jpg" class="file-input"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label><input type="file" id="up-music" accept="audio/*" class="file-input"></div>
                 <div class="flex flex-col gap-3 pt-2">
                     <button onclick="saveAdmin()" class="w-full py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
@@ -120,7 +121,6 @@
 
         async function autoDiscoverFiles() {
             try {
-                // Auto-Discovery: Scan GitHub API for existing files if config is empty or fails
                 const imgRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/docs/images`, {
                     headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
                 });
@@ -163,8 +163,9 @@
             const vFiles = document.getElementById('up-video').files;
             const mFile = document.getElementById('up-music').files[0];
             const pFiles = document.getElementById('up-photos').files;
+            const pUrl = document.getElementById('up-photo-url').value.trim();
 
-            if (vFiles.length > 0 || mFile || pFiles.length > 0) {
+            if (vFiles.length > 0 || mFile || pFiles.length > 0 || pUrl) {
                 document.getElementById('loading-overlay').style.display = 'flex';
                 try {
                     for (let file of vFiles) {
@@ -181,6 +182,9 @@
                         const path = `docs/images/${Date.now()}-${file.name}`;
                         await uploadFile(file, path);
                         siteConfig.photos.unshift(`images/${path.split('/').pop()}`);
+                    }
+                    if (pUrl) {
+                        siteConfig.photos.unshift(pUrl);
                     }
                     await saveConfigToGitHub();
                     alert('บันทึกสำเร็จ! ข้อมูลจะอัปเดตทันที');
@@ -212,17 +216,20 @@
             if (!confirm('ลบไฟล์นี้ใช่ไหม?')) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                const fullPath = `docs/${path}`;
-                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
-                const getRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
-                if (getRes.ok) {
-                    const data = await getRes.json();
-                    await fetch(url, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: `Delete ${path}`, sha: data.sha })
-                    });
+                if (!path.startsWith('http')) {
+                    const fullPath = `docs/${path}`;
+                    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
+                    const getRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
+                    if (getRes.ok) {
+                        const data = await getRes.json();
+                        await fetch(url, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: `Delete ${path}`, sha: data.sha })
+                        });
+                    }
                 }
+                
                 if (type === 'photo') siteConfig.photos = siteConfig.photos.filter(p => p !== path);
                 else siteConfig.videos = siteConfig.videos.filter(v => v !== path);
                 
@@ -242,19 +249,26 @@
 
             siteConfig.videos.forEach(path => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', '0deg');
-                div.innerHTML = `<video src="${path}${cacheBuster}" controls playsinline onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'"></video>
+                const src = path.startsWith('http') ? path : `${path}${cacheBuster}`;
+                const onerror = path.startsWith('http') ? "" : `onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'"`;
+                div.innerHTML = `<video src="${src}" controls playsinline ${onerror}></video>
                 <div class="delete-btn" onclick="deleteAsset('video', '${path}')"><i class="fas fa-trash"></i></div>`;
                 vGrid.appendChild(div);
             });
 
             siteConfig.photos.forEach((path, i) => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', i % 2 === 0 ? "-3deg" : "3deg");
-                div.innerHTML = `<img src="${path}${cacheBuster}" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'">
+                const src = path.startsWith('http') ? path : `${path}${cacheBuster}`;
+                const onerror = path.startsWith('http') ? "" : `onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'"`;
+                div.innerHTML = `<img src="${src}" loading="lazy" ${onerror}>
                 <div class="delete-btn" onclick="deleteAsset('photo', '${path}')"><i class="fas fa-trash"></i></div>`;
                 pGrid.appendChild(div);
             });
 
-            if (siteConfig.musicUrl) document.getElementById('main-audio').src = `${siteConfig.musicUrl}${cacheBuster}`;
+            if (siteConfig.musicUrl) {
+                const musicSrc = siteConfig.musicUrl.startsWith('http') ? siteConfig.musicUrl : `${siteConfig.musicUrl}${cacheBuster}`;
+                document.getElementById('main-audio').src = musicSrc;
+            }
         }
 
         function addNum(n) { pin += n; updateDots(); if (pin.length === 6) { if (pin === "080868") unlock(); else { pin = ""; updateDots(); gsap.to("#lock-screen", { x: [-10, 10, 0], duration: 0.3 }); } } }
