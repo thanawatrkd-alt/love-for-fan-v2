@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รักแฟนนะคะอยู่กับเค้าไปนาน</title>
-    <!-- Stable Version: 2026-04-22 - High Stability & No API Lag -->
+    <!-- Ultimate Stability Version: 2026-04-22 - Auto-Discovery & Reset System -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -51,9 +51,10 @@
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label><input type="file" id="up-video" accept="video/*" multiple class="file-input"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label><input type="file" id="up-photos" accept="image/*" multiple class="file-input"></div>
                 <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label><input type="file" id="up-music" accept="audio/*" class="file-input"></div>
-                <div class="flex gap-3 pt-2">
-                    <button onclick="saveAdmin()" class="flex-1 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
-                    <button onclick="closeAdmin()" class="px-5 py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
+                <div class="flex flex-col gap-3 pt-2">
+                    <button onclick="saveAdmin()" class="w-full py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
+                    <button onclick="resetSystem()" class="w-full py-2 bg-red-50 text-red-400 rounded-xl font-bold text-xs border border-red-100">รีเซ็ตระบบ (แก้ปัญหารูปไม่ขึ้น)</button>
+                    <button onclick="closeAdmin()" class="w-full py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
                 </div>
             </div>
         </div>
@@ -88,21 +89,57 @@
         let pin = "";
         let siteConfig = { photos: [], videos: [], musicUrl: "" };
 
-        // Force Clear old LocalStorage that causes deletion bugs
-        localStorage.clear(); 
-
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
 
+        async function resetSystem() {
+            if(!confirm('ต้องการรีเซ็ตระบบเพื่อกู้คืนรูปภาพที่หายไปใช่ไหม?')) return;
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "กำลังรีเซ็ตระบบ...";
+            localStorage.clear();
+            await autoDiscoverFiles();
+            alert('รีเซ็ตสำเร็จ! ระบบกู้คืนข้อมูลเรียบร้อยแล้ว');
+            window.location.reload(true);
+        }
+
         async function loadConfig() {
             try {
-                // Fetch fresh config from GitHub with high-priority cache busting
                 const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${GITHUB_CONFIG.configFile}?nocache=${Date.now()}`);
                 if (res.ok) {
                     siteConfig = await res.json();
-                    renderAssets();
+                    if (!siteConfig.photos.length && !siteConfig.videos.length) {
+                        await autoDiscoverFiles();
+                    } else {
+                        renderAssets();
+                    }
+                } else {
+                    await autoDiscoverFiles();
                 }
-            } catch (e) { console.error("Config load error", e); }
+            } catch (e) { await autoDiscoverFiles(); }
+        }
+
+        async function autoDiscoverFiles() {
+            try {
+                // Auto-Discovery: Scan GitHub API for existing files if config is empty or fails
+                const imgRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/docs/images`, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                });
+                const vidRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/docs/assets/video`, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                });
+
+                if (imgRes.ok) {
+                    const files = await imgRes.json();
+                    siteConfig.photos = files.filter(f => f.name !== '.gitkeep').map(f => `images/${f.name}`);
+                }
+                if (vidRes.ok) {
+                    const files = await vidRes.json();
+                    siteConfig.videos = files.filter(f => f.name !== '.gitkeep').map(f => `assets/video/${f.name}`);
+                }
+                
+                await saveConfigToGitHub();
+                renderAssets();
+            } catch (e) { console.error("Discovery error", e); }
         }
 
         async function saveConfigToGitHub() {
@@ -115,7 +152,7 @@
                 method: 'PUT',
                 headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: "Update site config",
+                    message: "Update site config (Auto-Sync)",
                     content: btoa(unescape(encodeURIComponent(JSON.stringify(siteConfig, null, 2)))),
                     sha: sha
                 })
@@ -131,23 +168,23 @@
                 document.getElementById('loading-overlay').style.display = 'flex';
                 try {
                     for (let file of vFiles) {
-                        const path = `assets/video/${Date.now()}-${file.name}`;
+                        const path = `docs/assets/video/${Date.now()}-${file.name}`;
                         await uploadFile(file, path);
-                        siteConfig.videos.unshift(path);
+                        siteConfig.videos.unshift(`assets/video/${path.split('/').pop()}`);
                     }
                     if (mFile) {
-                        const path = 'assets/audio/main.mp3';
+                        const path = 'docs/assets/audio/main.mp3';
                         await uploadFile(mFile, path);
-                        siteConfig.musicUrl = path;
+                        siteConfig.musicUrl = 'assets/audio/main.mp3';
                     }
                     for (let file of pFiles) {
-                        const path = `images/${Date.now()}-${file.name}`;
+                        const path = `docs/images/${Date.now()}-${file.name}`;
                         await uploadFile(file, path);
-                        siteConfig.photos.unshift(path);
+                        siteConfig.photos.unshift(`images/${path.split('/').pop()}`);
                     }
                     await saveConfigToGitHub();
                     alert('บันทึกสำเร็จ! ข้อมูลจะอัปเดตทันที');
-                    loadConfig();
+                    window.location.reload(true);
                 } catch (e) { alert('อัปโหลดล้มเหลว: ' + e.message); }
                 finally { document.getElementById('loading-overlay').style.display = 'none'; }
             }
@@ -175,7 +212,8 @@
             if (!confirm('ลบไฟล์นี้ใช่ไหม?')) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+                const fullPath = `docs/${path}`;
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
                 const getRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
                 if (getRes.ok) {
                     const data = await getRes.json();
@@ -189,9 +227,7 @@
                 else siteConfig.videos = siteConfig.videos.filter(v => v !== path);
                 
                 await saveConfigToGitHub();
-                
-                // Force Reload to ensure everything is synced with GitHub
-                alert('ลบสำเร็จ! ระบบกำลังอัปเดตหน้าเว็บ...');
+                alert('ลบสำเร็จ!');
                 window.location.reload(true);
             } catch (e) { alert('ลบล้มเหลว: ' + e.message); }
             finally { document.getElementById('loading-overlay').style.display = 'none'; }
@@ -206,21 +242,19 @@
 
             siteConfig.videos.forEach(path => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', '0deg');
-                // Use relative path for stability on GitHub Pages
-                div.innerHTML = `<video src="${path}${cacheBuster}" controls playsinline></video>
+                div.innerHTML = `<video src="${path}${cacheBuster}" controls playsinline onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'"></video>
                 <div class="delete-btn" onclick="deleteAsset('video', '${path}')"><i class="fas fa-trash"></i></div>`;
                 vGrid.appendChild(div);
             });
 
             siteConfig.photos.forEach((path, i) => {
                 const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', i % 2 === 0 ? "-3deg" : "3deg");
-                // Use relative path for stability on GitHub Pages
-                div.innerHTML = `<img src="${path}${cacheBuster}" loading="lazy">
+                div.innerHTML = `<img src="${path}${cacheBuster}" loading="lazy" onerror="this.src='https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}'">
                 <div class="delete-btn" onclick="deleteAsset('photo', '${path}')"><i class="fas fa-trash"></i></div>`;
                 pGrid.appendChild(div);
             });
 
-            if (siteConfig.musicUrl) document.getElementById('main-audio').src = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${siteConfig.musicUrl}`;
+            if (siteConfig.musicUrl) document.getElementById('main-audio').src = `${siteConfig.musicUrl}${cacheBuster}`;
         }
 
         function addNum(n) { pin += n; updateDots(); if (pin.length === 6) { if (pin === "080868") unlock(); else { pin = ""; updateDots(); gsap.to("#lock-screen", { x: [-10, 10, 0], duration: 0.3 }); } } }
