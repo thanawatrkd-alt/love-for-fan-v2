@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รักแฟนนะคะอยู่กับเค้าไปนาน</title>
-    <!-- Last Updated: 2026-04-22T10:45:00Z -->
+    <!-- Last Updated: 2026-04-22T10:55:00Z - Bug Fix & Translation -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -331,15 +331,30 @@
             });
         }
 
-        async function deletePhoto(path, sha) {
+        let isDeleting = false;
+        async function deletePhoto(path) {
+            if(isDeleting) return;
             if(!confirm('คุณต้องการลบรูปภาพนี้ใช่หรือไม่?')) return;
             
+            isDeleting = true;
             document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "กำลังลบรูปภาพ...";
+            document.getElementById('loading-text').innerText = "กำลังตรวจสอบข้อมูลล่าสุด...";
             
             const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
             
             try {
+                // 1. Get the latest SHA every time to avoid API conflicts
+                const getRes = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                });
+                
+                if(!getRes.ok) throw new Error('ไม่สามารถดึงข้อมูลรูปภาพล่าสุดได้');
+                const fileData = await getRes.json();
+                const currentSha = fileData.sha;
+
+                document.getElementById('loading-text').innerText = "กำลังลบรูปภาพ...";
+                
+                // 2. Perform delete with latest SHA
                 const response = await fetch(url, {
                     method: 'DELETE',
                     headers: {
@@ -348,7 +363,7 @@
                     },
                     body: JSON.stringify({
                         message: `Delete photo: ${path}`,
-                        sha: sha
+                        sha: currentSha
                     })
                 });
                 
@@ -357,11 +372,16 @@
                     throw new Error(`GitHub API error: ${errorData.message || response.statusText}`);
                 }
                 
+                // 3. Small delay to let GitHub API settle
+                await new Promise(r => setTimeout(r, 1000));
+                
                 document.getElementById('loading-overlay').style.display = 'none';
                 loadAssets();
             } catch (error) {
                 document.getElementById('loading-overlay').style.display = 'none';
                 alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+            } finally {
+                isDeleting = false;
             }
         }
 
@@ -402,7 +422,7 @@
                             const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/${file.path}?t=${cacheBust}`;
                             div.innerHTML = `
                                 <img src="${imageUrl}" loading="lazy" alt="Memory photo">
-                                <div class="delete-btn" onclick="deletePhoto('${file.path}', '${file.sha}')">
+                                <div class="delete-btn" onclick="deletePhoto('${file.path}')">
                                     <i class="fas fa-trash"></i>
                                 </div>
                             `;
