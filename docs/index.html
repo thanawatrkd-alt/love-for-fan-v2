@@ -88,12 +88,16 @@
         let pin = "";
         let siteConfig = { photos: [], videos: [], musicUrl: "" };
 
+        // Force Clear old LocalStorage that causes deletion bugs
+        localStorage.clear(); 
+
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
 
         async function loadConfig() {
             try {
-                const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${GITHUB_CONFIG.configFile}?t=${Date.now()}`);
+                // Fetch fresh config from GitHub with high-priority cache busting
+                const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${GITHUB_CONFIG.configFile}?nocache=${Date.now()}`);
                 if (res.ok) {
                     siteConfig = await res.json();
                     renderAssets();
@@ -183,9 +187,13 @@
                 }
                 if (type === 'photo') siteConfig.photos = siteConfig.photos.filter(p => p !== path);
                 else siteConfig.videos = siteConfig.videos.filter(v => v !== path);
+                
                 await saveConfigToGitHub();
-                renderAssets();
-            } catch (e) { alert('ลบล้มเหลว'); }
+                
+                // Force Reload to ensure everything is synced with GitHub
+                alert('ลบสำเร็จ! ระบบกำลังอัปเดตหน้าเว็บ...');
+                window.location.reload(true);
+            } catch (e) { alert('ลบล้มเหลว: ' + e.message); }
             finally { document.getElementById('loading-overlay').style.display = 'none'; }
         }
 
