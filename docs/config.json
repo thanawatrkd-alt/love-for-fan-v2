@@ -1,7 +1,10 @@
 {
   "photos": [
-    "images/1776873980068-1000054992.jpg"
+    "images/1776873980068-1000054992.jpg",
+    "images/1776873977-favorite.jpg"
   ],
-  "videos": [],
+  "videos": [
+    "assets/video/1776873161694-1000054991.mp4"
+  ],
   "musicUrl": ""
 }
