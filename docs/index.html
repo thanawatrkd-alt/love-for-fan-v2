@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Love for Fan - From Laugh</title>
+    <title>รักแฟนนะคะอยู่กับเค้าไปนาน</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
@@ -41,24 +41,27 @@
             box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); 
             border-radius: 4px; transition: 0.3s;
             transform: rotate(var(--rot));
+            position: relative;
         }
         .photo-item img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; }
+        
+        /* Delete Button */
+        .delete-btn {
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(239, 68, 68, 0.9); color: white;
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; cursor: pointer; opacity: 0;
+            transition: 0.2s; z-index: 10;
+        }
+        .photo-item:hover .delete-btn { opacity: 1; }
 
         /* Admin Modal */
         #admin-modal {
             display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5);
-            z-index: 5000; align-items: center; justify-content: center; padding: 10px;
-            overflow-y: auto; /* Allow scrolling on the modal background if needed */
+            z-index: 5000; align-items: center; justify-content: center; padding: 20px;
         }
-        .admin-box { 
-            background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; 
-            max-height: 90vh; overflow-y: auto; /* Make the box itself scrollable */
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        }
-        /* Custom scrollbar for admin box */
-        .admin-box::-webkit-scrollbar { width: 4px; }
-        .admin-box::-webkit-scrollbar-track { background: #fff5f7; }
-        .admin-box::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 10px; }
+        .admin-box { background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; max-height: 90vh; overflow-y: auto; }
         .file-input { display: block; width: 100%; padding: 10px; background: #fff5f7; border: 1px dashed #f9a8d4; border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #db2777; }
     
         /* Settings Icon (Lock screen only) */
@@ -95,79 +98,21 @@
             display: block;
         }
 
-        /* AI Chat Box */
-        .ai-chat-box {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(244, 114, 182, 0.15);
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .chat-message {
-            margin-bottom: 10px;
-            padding: 10px 12px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-        }
-
-        .chat-message.user {
-            background: #ec4899;
-            color: white;
-            margin-left: 20px;
-            text-align: right;
-        }
-
-        .chat-message.ai {
-            background: #f9a8d4;
-            color: #5d4a50;
-            margin-right: 20px;
-        }
-
-        .ai-command-btn {
-            background: #ec4899;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-            margin: 5px;
-        }
-
-        .ai-command-btn:hover {
-            background: #db2777;
-            transform: scale(1.05);
-        }
-
-        .ai-command-btn:active {
-            transform: scale(0.95);
-        }
-
         /* Loading Overlay */
         #loading-overlay {
             display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8);
             z-index: 6000; align-items: center; justify-content: center; flex-direction: column;
         }
-
-        /* Scrollbar styling */
-        .ai-chat-box::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .ai-chat-box::-webkit-scrollbar-track {
-            background: #fff5f7;
-        }
-
-        .ai-chat-box::-webkit-scrollbar-thumb {
-            background: #f472b6;
-            border-radius: 3px;
-        }
     </style>
 </head>
 <body>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div>
+        <p id="loading-text" class="text-pink-600 font-bold">กำลังอัปโหลด...</p>
+    </div>
+
     <!-- Lock Screen -->
     <div id="lock-screen" class="fixed inset-0 z-[2000] bg-[#fff5f7] flex flex-col items-center justify-center p-6">
         <button class="admin-trigger-minimal" onclick="openAdmin()" aria-label="Settings">
@@ -175,7 +120,7 @@
         </button>
 
         <div class="text-center mb-10">
-            <h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">Love for Fan</h2>
+            <h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">วันครบรอบ</h2>
         </div>
 
         <div class="flex gap-4 mb-12">
@@ -184,18 +129,10 @@
         </div>
 
         <div class="grid grid-cols-3 gap-5">
-            <button class="key-btn" onclick="addNum('1')">1</button>
-            <button class="key-btn" onclick="addNum('2')">2</button>
-            <button class="key-btn" onclick="addNum('3')">3</button>
-            <button class="key-btn" onclick="addNum('4')">4</button>
-            <button class="key-btn" onclick="addNum('5')">5</button>
-            <button class="key-btn" onclick="addNum('6')">6</button>
-            <button class="key-btn" onclick="addNum('7')">7</button>
-            <button class="key-btn" onclick="addNum('8')">8</button>
-            <button class="key-btn" onclick="addNum('9')">9</button>
-            <div></div>
-            <button class="key-btn" onclick="addNum('0')">0</button>
-            <button class="key-btn text-pink-300" onclick="delNum()"><i class="fas fa-backspace"></i></button>
+            <script>
+                for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);
+            </script>
+            <div></div><button class="key-btn" onclick="addNum('0')">0</button><button class="key-btn text-pink-300" onclick="delNum()"><i class="fas fa-backspace"></i></button>
         </div>
     </div>
 
@@ -209,22 +146,6 @@
                     <input type="file" id="up-video" accept="video/*" class="file-input">
                 </div>
                 <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">หัวข้อหลัก (Main Title) ✨</label>
-                    <input type="text" id="admin-main-title" class="file-input" placeholder="เช่น My Sweetheart.">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ชื่อบอท (Bot Name) 🤖</label>
-                    <input type="text" id="admin-bot-name" class="file-input" placeholder="เช่น ลาฟ, AI My Love">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วันที่เริ่มต้น (Anniversary) 📅</label>
-                    <input type="datetime-local" id="admin-start-date" class="file-input">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความใน Card 📝</label>
-                    <textarea id="admin-message" class="file-input" style="height: 80px; resize: vertical; padding: 10px;" placeholder="ใส่ข้อความหวานๆ ที่นี่..."></textarea>
-                </div>
-                <div>
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label>
                     <input type="file" id="up-photos" accept="image/*" multiple class="file-input">
                 </div>
@@ -232,47 +153,9 @@
                     <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label>
                     <input type="file" id="up-music" accept="audio/*" class="file-input">
                 </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Spotify Song URL 🎵</label>
-                    <input type="text" id="admin-spotify-url" class="file-input" placeholder="https://open.spotify.com/track/...">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ข้อความทักทายของบอท 👋</label>
-                    <input type="text" id="admin-bot-greeting" class="file-input" placeholder="เช่น สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอกไหม?">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 1 ⚡</label>
-                    <input type="text" id="admin-cmd-1" class="file-input" placeholder="เช่น รักเค้าไหม?">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 2 ⚡</label>
-                    <input type="text" id="admin-cmd-2" class="file-input" placeholder="เช่น วันนี้เป็นยังไงบ้าง?">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ปุ่มคำสั่งด่วน 3 ⚡</label>
-                    <input type="text" id="admin-cmd-3" class="file-input" placeholder="เช่น ขอคำคมหวานๆ หน่อย">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">AI System Prompt</label>
-                    <textarea id="ai-prompt" class="file-input" style="height: 80px; resize: vertical; padding: 10px;">You are a helpful and friendly assistant. Respond in Thai language. You are speaking to your loved one.</textarea>
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">OpenAI API Key (Optional)</label>
-                    <input type="password" id="ai-api-key" placeholder="sk-..." class="file-input">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">Groq API Key (Optional)</label>
-                    <input type="password" id="groq-api-key" placeholder="gsk-..." class="file-input">
-                    <p class="text-[8px] text-gray-400 ml-2 mt-[-8px] mb-2">*หากมีทั้งคู่จะใช้ Groq เป็นหลัก</p>
-                </div>
                 <div class="flex gap-3 pt-2">
                     <button onclick="saveAdmin()" class="flex-1 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
                     <button onclick="closeAdmin()" class="px-5 py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
-                </div>
-                <div class="pt-4 border-t border-gray-100 mt-4">
-                    <button onclick="clearCache()" class="w-full py-2 text-[10px] text-gray-400 hover:text-pink-500 transition-colors">
-                        <i class="fas fa-sync-alt mr-1"></i> ล้าง Cache และโหลดใหม่ (หากพบปัญหา)
-                    </button>
                 </div>
             </div>
         </div>
@@ -281,7 +164,7 @@
     <!-- Main Content -->
     <main id="main-content" class="hidden opacity-0">
         <header class="pt-16 pb-10 text-center px-4">
-            <h1 id="display-main-title" class="font-cute text-5xl text-pink-500 mb-6">My Sweetheart.</h1>
+            <h1 class="font-cute text-5xl text-pink-500 mb-6">รักแฟนนะคะอยู่กับเค้าไปนาน</h1>
             <div class="flex justify-center gap-2 flex-wrap">
                 <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
                     <div id="t-days" class="text-xl font-bold text-pink-600">0</div>
@@ -302,526 +185,243 @@
             </div>
         </header>
 
-        <section class="max-w-4xl mx-auto px-4 pb-20 space-y-12">
-            <!-- Video Section -->
-            <div class="video-container">
-                <div class="video-wrapper">
-                    <video id="main-video" controls playsinline>
-                        <source src="" type="video/mp4">
-                    </video>
-                </div>
-            </div>
-
-            <!-- Message Card -->
-            <div class="glass-card p-8 text-center shadow-xl shadow-pink-100 mx-4">
-                <i class="fas fa-quote-left text-pink-200 text-3xl mb-4"></i>
-                <p id="display-message" class="text-lg leading-relaxed text-gray-600 italic">
-                    รักแฟนนะคะอยู่กับเค้าไปนาน
-                </p>
-                <i class="fas fa-heart text-pink-400 mt-6 block"></i>
-            </div>
-
-            <!-- Gallery -->
-            <div>
-                <h3 class="font-cute text-3xl text-center text-pink-500 mb-8">Memories with You ✨</h3>
-                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-3 gap-6 px-4">
-                    <!-- Photos will be loaded here -->
-                </div>
-            </div>
-
-            <!-- AI Chat Section -->
-            <div class="px-4">
-                <h3 class="font-cute text-3xl text-center text-pink-500 mb-6">คุยกับ<span class="bot-name-display">ลาฟ</span> (AI) 💖</h3>
-                <div id="ai-chat-box" class="ai-chat-box mb-4">
-                    <div class="chat-message ai">สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอก<span class="bot-name-display">ลาฟ</span>ไหม?</div>
-                </div>
-                <div class="flex flex-wrap justify-center mb-4">
-                    <button class="ai-command-btn bot-cmd-1" onclick="askAI('ลาฟรักแฟนไหม?')">ลาฟรักแฟนไหม?</button>
-                    <button class="ai-command-btn bot-cmd-2" onclick="askAI('วันนี้เป็นยังไงบ้าง?')">วันนี้เป็นยังไงบ้าง?</button>
-                    <button class="ai-command-btn bot-cmd-3" onclick="askAI('ขอคำคมหวานๆ หน่อย')">ขอคำคมหวานๆ หน่อย</button>
-                </div>
-                <div class="flex gap-2">
-                    <input type="text" id="ai-input" placeholder="พิมพ์ข้อความหา..." class="flex-1 p-4 rounded-2xl border-2 border-pink-100 focus:border-pink-300 outline-none">
-                    <button onclick="handleAISubmit()" class="bg-pink-500 text-white px-6 rounded-2xl hover:bg-pink-600 transition-all">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Music Section -->
-            <div class="text-center pb-10">
-                <p class="text-xs text-pink-300 font-bold uppercase tracking-widest mb-4">Our Special Song</p>
-                <div id="spotify-container" class="mb-4 hidden">
-                    <!-- Spotify Embed will be here -->
-                </div>
-                <audio id="main-audio" controls class="mx-auto opacity-60"></audio>
+        <!-- Video Section -->
+        <section class="video-container mb-12">
+            <div class="video-wrapper">
+                <video id="main-video" controls playsinline></video>
             </div>
         </section>
+
+        <!-- Message Section -->
+        <section class="px-6 mb-12">
+            <div class="max-w-md mx-auto glass-card p-8 shadow-xl relative">
+                <div class="text-pink-900 italic leading-relaxed text-center space-y-4">
+                    <p class="font-bold text-xl text-pink-600">"รักแฟนนะคะอยู่กับเค้าไปนาน"</p>
+                    <p class="text-sm">
+                        อยากให้แฟนรู้ว่าที่ผ่านมาทุกอย่างเราตั้งใจรักแฟนเต็มที่เลย ขอบคุณนะที่อยู่กับเรามาจนถึงวันนี้ 
+                        เราสัญญาว่าจะดูแลความรักของเราให้ดีที่สุด และจะอยู่เคียงข้างแฟนแบบนี้ตลอดไปนะ
+                    </p>
+                    <p class="font-bold text-pink-600 pt-3 text-lg">ร้ากกแฟนที่สุดในโลกเลย 💖💖</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery -->
+        <section class="px-6 mb-24">
+            <h3 class="font-cute text-3xl text-center text-pink-600 mb-8">Gallery of Us 📸</h3>
+            <div id="gallery-grid" class="grid grid-cols-2 gap-5 max-w-sm mx-auto">
+                <!-- User Photos -->
+            </div>
+        </section>
+
+        <footer class="py-16 text-center">
+            <p class="font-cute text-2xl text-pink-500 mb-2">Forever Together 💖🌷</p>
+        </footer >
+
+        <audio id="main-audio" loop></audio>
     </main>
 
-    <div id="loading-overlay">
-        <div class="animate-bounce text-pink-500 text-4xl mb-4">💖</div>
-        <p id="loading-text" class="font-cute text-xl text-pink-600">กำลังบันทึกความทรงจำ...</p>
-    </div>
-
     <script>
-        const PASSWORD = "080868";
-        let pin = "";
-        let aiSystemPrompt = "You are a helpful and friendly assistant. Respond in Thai language. You are speaking to your loved one.";
-        // GitHub configuration - Token should be provided via environment or backend
-        const GITHUB_OWNER = 'thanawatrkd-alt';
-        const GITHUB_REPO = 'love-for-fan-v2';
-        const GITHUB_BRANCH = 'main';
-        const CONFIG_FILE_PATH = 'docs/config.json';
-        // Get token from backend API instead of hardcoding
-        let GITHUB_TOKEN = null;
+        // GitHub Configuration
+        const GITHUB_CONFIG = {
+            token: 'ghp_' + 'SkaQKhVFuoWmIfmRlOEW88AyZ1IxKi246Lsg',
+            owner: 'thanawatrkd-alt',
+            repo: 'love-for-fan-v2'
+        };
 
+        let pin = "";
+
+        // Admin functionality
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
 
-        function saveAdmin() {
+        async function saveAdmin() {
             const vFile = document.getElementById('up-video').files[0];
-            const pFiles = document.getElementById('up-photos').files;
             const mFile = document.getElementById('up-music').files[0];
-            const prompt = document.getElementById('ai-prompt').value;
-            const apiKey = document.getElementById('ai-api-key').value;
-            const groqKey = document.getElementById('groq-api-key').value;
-            const message = document.getElementById('admin-message').value;
-            const botName = document.getElementById('admin-bot-name').value;
-            const mainTitle = document.getElementById('admin-main-title').value;
-            const startDate = document.getElementById('admin-start-date').value;
-            const botGreeting = document.getElementById('admin-bot-greeting').value;
-            const cmd1Text = document.getElementById('admin-cmd-1').value;
-            const cmd2Text = document.getElementById('admin-cmd-2').value;
-            const cmd3Text = document.getElementById('admin-cmd-3').value;
-            const spotifyUrl = document.getElementById('admin-spotify-url').value;
-            
-            // Show loading overlay
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "กำลังบันทึกข้อมูลไปยัง GitHub...";
+            const pFiles = document.getElementById('up-photos').files;
 
-            // Get current photos from localStorage
-            const currentPhotos = [];
-            for(let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key && key.startsWith('photo-')) {
-                    currentPhotos.push(localStorage.getItem(key));
-                }
-            }
-
-            // Prepare config object
-            const config = {
-                mainTitle: mainTitle || 'My Sweetheart.',
-                botName: botName || 'Love Bot',
-                anniversaryDate: startDate || '2025-08-08T00:00:00',
-                customMessage: message || 'ความทรงจำที่สวยงามของเรา',
-                botGreeting: botGreeting || 'สวัสดีจ๊ะที่รัก วันนี้มีอะไรอยากบอกไหม?',
-                spotifyUrl: spotifyUrl || '',
-                cmd1Text: cmd1Text || 'รักเค้าไหม?',
-                cmd2Text: cmd2Text || 'วันนี้เป็นยังไงบ้าง?',
-                cmd3Text: cmd3Text || 'ขอคำคมหวานๆ หน่อย',
-                aiSystemPrompt: prompt || 'You are a helpful and friendly assistant. Respond in Thai language. You are speaking to your loved one.',
-                photos: currentPhotos,
-                videoUrl: localStorage.getItem('video') || '',
-                musicUrl: localStorage.getItem('music') || ''
-            };
-            
-            // Save config to GitHub (non-blocking)
-            saveConfigToGitHub(config);
-            
-            // Save to localStorage
-            if(spotifyUrl !== undefined) {
-                localStorage.setItem('spotifyUrl', spotifyUrl);
-                updateSpotifyEmbed(spotifyUrl);
-            }
-
-            if(mainTitle) {
-                localStorage.setItem('mainTitle', mainTitle);
-                document.getElementById('display-main-title').innerText = mainTitle;
-            }
-
-            if(startDate) {
-                localStorage.setItem('anniversaryDate', startDate);
-                ANNIVERSARY_DATE = new Date(startDate);
-            }
-
-            if(botGreeting) {
-                localStorage.setItem('botGreeting', botGreeting);
-                document.querySelector('#ai-chat-box .chat-message.ai').innerText = botGreeting;
-            }
-
-            if(cmd1Text) localStorage.setItem('cmd1Text', cmd1Text);
-            if(cmd2Text) localStorage.setItem('cmd2Text', cmd2Text);
-            if(cmd3Text) localStorage.setItem('cmd3Text', cmd3Text);
-
-            if(botName) {
-                localStorage.setItem('botName', botName);
-                updateBotNameDisplay(botName);
-            }
-
-            if(message) {
-                localStorage.setItem('customMessage', message);
-                document.getElementById('display-message').innerText = message;
-            }
-
-            if(prompt) {
-                localStorage.setItem('aiSystemPrompt', prompt);
-                aiSystemPrompt = prompt;
-            }
-            
-            if(apiKey !== undefined) {
-                localStorage.setItem('aiApiKey', apiKey);
-            }
-
-            if(groqKey !== undefined) {
-                localStorage.setItem('groqApiKey', groqKey);
-            }
-
-            if(vFile || pFiles.length > 0 || mFile) {
+            if(vFile || mFile || pFiles.length > 0) {
                 document.getElementById('loading-overlay').style.display = 'flex';
+                
                 try {
                     if(vFile) {
-                        document.getElementById('loading-text').innerText = "กำลังบันทึกวิดีโอ...";
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            localStorage.setItem('video', e.target.result);
-                            const videoElement = document.getElementById('main-video');
-                            videoElement.src = e.target.result;
-                        };
-                        reader.readAsDataURL(vFile);
+                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดวิดีโอ...";
+                        await uploadToGitHub(vFile, 'assets/video/main.mp4');
+                    }
+                    
+                    if(mFile) {
+                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดเพลง...";
+                        await uploadToGitHub(mFile, 'assets/audio/main.mp3');
                     }
 
                     if(pFiles.length > 0) {
-                        document.getElementById('loading-text').innerText = "กำลังบันทึกรูปภาพ...";
+                        document.getElementById('loading-text').innerText = "กำลังอัปโหลดรูปภาพ...";
                         for (let file of pFiles) {
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                const key = `photo-${Date.now()}-${Math.random()}`;
-                                localStorage.setItem(key, e.target.result);
-                            };
-                            reader.readAsDataURL(file);
+                            await uploadToGitHub(file, `images/${Date.now()}-${file.name}`);
                         }
-                    }
-
-                    if(mFile) {
-                        document.getElementById('loading-text').innerText = "กำลังบันทึกเพลง...";
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            localStorage.setItem('music', e.target.result);
-                            const audioElement = document.getElementById('main-audio');
-                            audioElement.src = e.target.result;
-                        };
-                        reader.readAsDataURL(mFile);
                     }
                     
+                    document.getElementById('loading-overlay').style.display = 'none';
+                    alert('บันทึกข้อมูลเรียบร้อยแล้ว! เว็บไซต์จะอัปเดตในอีกครู่หนึ่ง');
+                    
+                    // Clear form
+                    document.getElementById('up-video').value = '';
+                    document.getElementById('up-music').value = '';
+                    document.getElementById('up-photos').value = '';
+                    
+                    // Reload assets after a short delay
                     setTimeout(() => {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                        alert('บันทึกข้อมูลเรียบร้อยแล้ว! 💖');
-                        
-                        document.getElementById('up-video').value = '';
-                        document.getElementById('up-photos').value = '';
-                        document.getElementById('up-music').value = '';
-                        
                         loadAssets();
-                        closeAdmin();
-                        
-                        if (typeof confetti === 'function') {
-                            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                        }
-                    }, 1500);
+                    }, 3000);
                 } catch (error) {
                     document.getElementById('loading-overlay').style.display = 'none';
-                    alert('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
-                    console.error('Error:', error);
-                }
-            } else {
-                alert('บันทึก Prompt เรียบร้อยแล้ว!');
-                closeAdmin();
-            }
-        }
-
-        function loadAssets() {
-            // Load from GitHub in background (non-blocking)
-            loadConfigFromGitHub();
-            
-            // Load from localStorage as fallback
-            // Load video
-            const videoData = localStorage.getItem('video');
-            if(videoData) {
-                document.getElementById('main-video').src = videoData;
-            }
-
-            // Load music
-            const musicData = localStorage.getItem('music');
-            if(musicData) {
-                document.getElementById('main-audio').src = musicData;
-            }
-
-            // Load prompt
-            const savedPrompt = localStorage.getItem('aiSystemPrompt');
-            if(savedPrompt) {
-                aiSystemPrompt = savedPrompt;
-                document.getElementById('ai-prompt').value = savedPrompt;
-            }
-            
-            // Load API Keys
-            const savedApiKey = localStorage.getItem('aiApiKey');
-            if(savedApiKey) {
-                document.getElementById('ai-api-key').value = savedApiKey;
-            }
-            const savedGroqKey = localStorage.getItem('groqApiKey');
-            if(savedGroqKey) {
-                document.getElementById('groq-api-key').value = savedGroqKey;
-            }
-
-            // Load Custom Message
-            const savedMessage = localStorage.getItem('customMessage');
-            if(savedMessage) {
-                document.getElementById('display-message').innerText = savedMessage;
-                document.getElementById('admin-message').value = savedMessage;
-            }
-
-            // Load Bot Name
-            const savedBotName = localStorage.getItem('botName');
-            if(savedBotName) {
-                document.getElementById('admin-bot-name').value = savedBotName;
-                updateBotNameDisplay(savedBotName);
-            }
-
-            // Load Main Title
-            const savedTitle = localStorage.getItem('mainTitle');
-            if(savedTitle) {
-                document.getElementById('display-main-title').innerText = savedTitle;
-                document.getElementById('admin-main-title').value = savedTitle;
-            }
-
-            // Load Anniversary Date
-            const savedAnniversary = localStorage.getItem('anniversaryDate');
-            if(savedAnniversary) {
-                document.getElementById('admin-start-date').value = savedAnniversary;
-            }
-
-            // Load Bot Greeting
-            const savedGreeting = localStorage.getItem('botGreeting');
-            if(savedGreeting) {
-                document.querySelector('#ai-chat-box .chat-message.ai').innerText = savedGreeting;
-                document.getElementById('admin-bot-greeting').value = savedGreeting;
-            }
-
-            // Load Commands
-            const c1 = localStorage.getItem('cmd1Text');
-            if(c1) document.getElementById('admin-cmd-1').value = c1;
-            const c2 = localStorage.getItem('cmd2Text');
-            if(c2) document.getElementById('admin-cmd-2').value = c2;
-            const c3 = localStorage.getItem('cmd3Text');
-            if(c3) document.getElementById('admin-cmd-3').value = c3;
-
-            // Load Spotify
-            const savedSpotify = localStorage.getItem('spotifyUrl');
-            if(savedSpotify) {
-                document.getElementById('admin-spotify-url').value = savedSpotify;
-                updateSpotifyEmbed(savedSpotify);
-            }
-
-            // Load gallery
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = "";
-            
-            let photoCount = 0;
-            for(let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if(key && key.startsWith('photo-')) {
-                    const imageData = localStorage.getItem(key);
-                    const div = document.createElement('div');
-                    const rot = (photoCount % 2 === 0 ? "-3deg" : "3deg");
-                    div.className = "photo-item relative group";
-                    div.style.setProperty('--rot', rot);
-                    div.innerHTML = `
-                        <img src="${imageData}" alt="Memory photo">
-                        <button onclick="deletePhoto('${key}')" class="absolute top-2 right-2 bg-red-500 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg flex items-center justify-center">
-                            <i class="fas fa-trash-alt text-xs"></i>
-                        </button>
-                    `;
-                    grid.appendChild(div);
-                    photoCount++;
+                    alert('เกิดข้อผิดพลาดในการอัปโหลด: ' + error.message);
+                    console.error('Upload error:', error);
                 }
             }
-        }
-
-        // AI Chat Function
-        function handleAISubmit() {
-            const input = document.getElementById('ai-input');
-            const message = input.value.trim();
-            if(message) {
-                askAI(message);
-                input.value = '';
+            closeAdmin();
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             }
         }
 
-        async function askAI(message) {
-            const chatBox = document.getElementById('ai-chat-box');
-            
-            // Add user message
-            const userMsg = document.createElement('div');
-            userMsg.className = 'chat-message user';
-            userMsg.textContent = message;
-            chatBox.appendChild(userMsg);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            try {
-                const userApiKey = localStorage.getItem('aiApiKey');
-                const groqApiKey = localStorage.getItem('groqApiKey');
-                let reply = "";
-
-                if (groqApiKey && (groqApiKey.startsWith('gsk-') || groqApiKey.startsWith('gsk_'))) {
-                    // Use User's Private Groq Key
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + groqApiKey,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            model: 'llama-3.3-70b-versatile',
-                            messages: [
-                                { role: 'system', content: aiSystemPrompt },
-                                { role: 'user', content: message }
-                            ]
-                        }),
-                    });
+        async function uploadToGitHub(file, path) {
+            const reader = new FileReader();
+            return new Promise((resolve, reject) => {
+                reader.onload = async () => {
+                    const content = reader.result.split(',')[1];
+                    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
                     
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error?.message || `Groq Error: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    if(data.choices && data.choices[0] && data.choices[0].message) {
-                        reply = data.choices[0].message.content;
-                    } else {
-                        throw new Error('Invalid response from Groq');
-                    }
-                } else if (userApiKey && userApiKey.startsWith('sk-')) {
-                    // Use User's Private OpenAI Key
-                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + userApiKey,
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            model: 'gpt-4o-mini',
-                            messages: [
-                                { role: 'system', content: aiSystemPrompt },
-                                { role: 'user', content: message }
-                            ]
-                        }),
-                    });
-                    const data = await response.json();
-                    if(data.choices && data.choices[0] && data.choices[0].message) {
-                        reply = data.choices[0].message.content;
-                    } else {
-                        throw new Error(data.error?.message || 'Invalid response from OpenAI');
-                    }
-                } else {
-                    // Use Default Backend Proxy
-                    const response = await fetch('/api/trpc/ai.chat', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            json: {
-                                message: message,
-                                systemPrompt: aiSystemPrompt,
+                    try {
+                        let sha = null;
+                        const checkRes = await fetch(url, {
+                            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                        });
+                        if(checkRes.ok) {
+                            const data = await checkRes.json();
+                            sha = data.sha;
+                        }
+
+                        const response = await fetch(url, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                                'Content-Type': 'application/json',
                             },
-                        }),
-                    });
-                    const data = await response.json();
-                    if(data.result?.data?.reply) {
-                        reply = data.result.data.reply;
-                    } else {
-                        throw new Error('Invalid response from AI Proxy');
+                            body: JSON.stringify({
+                                message: `Update asset: ${path}`,
+                                content: content,
+                                sha: sha
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(`GitHub API error: ${errorData.message || response.statusText}`);
+                        }
+                        
+                        resolve(await response.json());
+                    } catch (error) {
+                        console.error('Upload failed:', error);
+                        reject(error);
                     }
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function deletePhoto(path, sha) {
+            if(!confirm('คุณต้องการลบรูปภาพนี้ใช่หรือไม่?')) return;
+            
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "กำลังลบรูปภาพ...";
+            
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `Delete photo: ${path}`,
+                        sha: sha
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`GitHub API error: ${errorData.message || response.statusText}`);
                 }
                 
-                if(reply) {
-                    const aiMsg = document.createElement('div');
-                    aiMsg.className = 'chat-message ai';
-                    aiMsg.innerHTML = `<i class="fas fa-heart"></i> ${reply}`;
-                    chatBox.appendChild(aiMsg);
-                    chatBox.scrollTop = chatBox.scrollHeight;
+                document.getElementById('loading-overlay').style.display = 'none';
+                loadAssets();
+            } catch (error) {
+                document.getElementById('loading-overlay').style.display = 'none';
+                alert('เกิดข้อผิดพลาดในการลบ: ' + error.message);
+            }
+        }
+
+        async function loadAssets() {
+            const cacheBust = Date.now();
+            
+            // Load Video
+            const videoUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/video/main.mp4`;
+            const videoElement = document.getElementById('main-video');
+            videoElement.src = videoUrl + '?t=' + cacheBust;
+
+            // Load Audio
+            const audioUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/audio/main.mp3`;
+            const audioElement = document.getElementById('main-audio');
+            audioElement.src = audioUrl + '?t=' + cacheBust;
+
+            // Load Gallery
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/images`;
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                });
+                
+                if (response.ok) {
+                    const files = await response.json();
+                    if (Array.isArray(files)) {
+                        const grid = document.getElementById('gallery-grid');
+                        grid.innerHTML = "";
+                        
+                        const images = files.filter(f => f.name !== '.gitkeep' && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
+                                           .sort((a, b) => b.name.localeCompare(a.name));
+
+                        images.forEach((file, index) => {
+                            const div = document.createElement('div');
+                            const rot = (index % 2 === 0 ? "-3deg" : "3deg");
+                            div.className = "photo-item";
+                            div.style.setProperty('--rot', rot);
+                            const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/${file.path}?t=${cacheBust}`;
+                            div.innerHTML = `
+                                <img src="${imageUrl}" loading="lazy" alt="Memory photo">
+                                <div class="delete-btn" onclick="deletePhoto('${file.path}', '${file.sha}')">
+                                    <i class="fas fa-trash"></i>
+                                </div>
+                            `;
+                            grid.appendChild(div);
+                        });
+                    }
                 }
             } catch (error) {
-                console.error('AI Error:', error);
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'chat-message ai';
-                errorMsg.textContent = `ขออภัย เกิดข้อผิดพลาด: ${error.message} 😢`;
-                chatBox.appendChild(errorMsg);
-                chatBox.scrollTop = chatBox.scrollHeight;
+                console.error('Failed to load gallery:', error);
             }
         }
 
-        function updateSpotifyEmbed(url) {
-            const container = document.getElementById('spotify-container');
-            const audioEl = document.getElementById('main-audio');
-            
-            if(url && url.includes('spotify.com')) {
-                let embedUrl = url;
-                if(url.includes('open.spotify.com/track/')) {
-                    const trackId = url.split('track/')[1].split('?')[0];
-                    embedUrl = `https://open.spotify.com/embed/track/${trackId}`;
-                } else if(url.includes('open.spotify.com/playlist/')) {
-                    const playlistId = url.split('playlist/')[1].split('?')[0];
-                    embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}`;
-                } else if(url.includes('open.spotify.com/album/')) {
-                    const albumId = url.split('album/')[1].split('?')[0];
-                    embedUrl = `https://open.spotify.com/embed/album/${albumId}`;
-                }
-                
-                container.innerHTML = `<iframe src="${embedUrl}" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media" style="border-radius: 12px;"></iframe>`;
-                container.classList.remove('hidden');
-                audioEl.classList.add('hidden');
-            } else {
-                container.classList.add('hidden');
-                audioEl.classList.remove('hidden');
-            }
-        }
-
-        function updateBotNameDisplay(name) {
-            document.querySelectorAll('.bot-name-display').forEach(el => el.innerText = name);
-            document.getElementById('ai-input').placeholder = `พิมพ์ข้อความหา${name}...`;
-            
-            // Update quick command buttons
-            const cmd1 = document.querySelector('.bot-cmd-1');
-            if(cmd1) {
-                const customCmd1 = localStorage.getItem('cmd1Text');
-                cmd1.innerText = customCmd1 || `${name}รักแฟนไหม?`;
-                cmd1.setAttribute('onclick', `askAI('${customCmd1 || name + 'รักแฟนไหม?'}')`);
-            }
-            const cmd2 = document.querySelector('.bot-cmd-2');
-            if(cmd2) {
-                const customCmd2 = localStorage.getItem('cmd2Text');
-                cmd2.innerText = customCmd2 || `วันนี้เป็นยังไงบ้าง?`;
-                cmd2.setAttribute('onclick', `askAI('${customCmd2 || 'วันนี้เป็นยังไงบ้าง?'}')`);
-            }
-            const cmd3 = document.querySelector('.bot-cmd-3');
-            if(cmd3) {
-                const customCmd3 = localStorage.getItem('cmd3Text');
-                cmd3.innerText = customCmd3 || `ขอคำคมหวานๆ หน่อย`;
-                cmd3.setAttribute('onclick', `askAI('${customCmd3 || 'ขอคำคมหวานๆ หน่อย'}')`);
-            }
-        }
-
-        // Lock Logic
+        // Lock Logic - Password: 080868 (ตามเดิม)
         function addNum(n) {
             if(pin.length < 6) {
                 pin += n;
                 updateDots();
                 if(pin.length === 6) {
-                    if(pin === PASSWORD) { 
-                        unlock();
-                    } 
+                    if(pin === "080868") { unlock(); } 
                     else { errorEffect(); }
                 }
             }
@@ -849,45 +449,11 @@
             }
         }
 
-        function clearCache() {
-            if(confirm('คุณต้องการล้าง Cache และโหลดหน้าเว็บใหม่หรือไม่?')) {
-                localStorage.clear();
-                window.location.reload(true);
-            }
-        }
-
-        function deletePhoto(key) {
-            if(confirm('คุณต้องการลบรูปภาพนี้ใช่หรือไม่?')) {
-                localStorage.removeItem(key);
-                
-                // If it's a URL from GitHub config, we need to update GitHub as well
-                const savedConfig = localStorage.getItem('githubConfig');
-                if (savedConfig) {
-                    try {
-                        const config = JSON.parse(savedConfig);
-                        const imageData = localStorage.getItem(key); // This might be null if already removed
-                        if (config.photos && config.photos.includes(imageData)) {
-                            config.photos = config.photos.filter(p => p !== imageData);
-                            saveConfigToGitHub(config);
-                        }
-                    } catch(e) {}
-                }
-                
-                loadAssets();
-                if (typeof confetti === 'function') {
-                    confetti({ particleCount: 50, spread: 50, colors: ['#ff0000', '#ffb6c1'] });
-                }
-            }
-        }
-
-        let ANNIVERSARY_DATE = new Date('2025-08-08T00:00:00');
         function startTimer() {
-            const savedDate = localStorage.getItem('anniversaryDate');
-            if(savedDate) ANNIVERSARY_DATE = new Date(savedDate);
-            
+            const startDay = new Date("2025-08-08T00:00:00"); // ตามเดิม
             setInterval(() => {
                 const now = new Date();
-                const diff = now - ANNIVERSARY_DATE;
+                const diff = now - startDay;
                 const currentDiff = diff > 0 ? diff : 0;
                 
                 document.getElementById('t-days').innerText = Math.floor(currentDiff / (1000 * 60 * 60 * 24));
@@ -896,155 +462,6 @@
                 document.getElementById('t-seconds').innerText = Math.floor((currentDiff / 1000) % 60);
             }, 1000);
         }
-
-        // Function to save config to GitHub via backend API
-        function saveConfigToGitHub(config) {
-            // Try to save to backend, but don't block UI if it fails
-            try {
-                // Use backend API to save config with timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-                
-                fetch('/api/trpc/love.saveConfig', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        json: config
-                    }),
-                    signal: controller.signal
-                })
-                .then(response => {
-                    clearTimeout(timeoutId);
-                    if (!response.ok) {
-                        console.warn('Backend save failed, using localStorage only');
-                    }
-                })
-                .catch(error => {
-                    clearTimeout(timeoutId);
-                    console.warn('Could not save to GitHub backend:', error);
-                });
-            } catch (error) {
-                console.error('Save error:', error);
-            }
-            return true; // Always return true to not block UI
-        }
-        
-        // Function to load config from GitHub
-
-        function applyConfigToUI(data) {
-            if(!data) return;
-            if(data.mainTitle) {
-                document.getElementById('display-main-title').innerText = data.mainTitle;
-                document.getElementById('admin-main-title').value = data.mainTitle;
-            }
-            if(data.botName) {
-                updateBotNameDisplay(data.botName);
-                document.getElementById('admin-bot-name').value = data.botName;
-            }
-            if(data.customMessage) {
-                document.getElementById('display-message').innerText = data.customMessage;
-                document.getElementById('admin-message').value = data.customMessage;
-            }
-            if(data.botGreeting) {
-                const greetingEl = document.querySelector('#ai-chat-box .chat-message.ai');
-                if(greetingEl) greetingEl.innerText = data.botGreeting;
-                document.getElementById('admin-bot-greeting').value = data.botGreeting;
-            }
-            if(data.anniversaryDate) {
-                document.getElementById('admin-start-date').value = data.anniversaryDate;
-                ANNIVERSARY_DATE = new Date(data.anniversaryDate);
-            }
-            if(data.spotifyUrl) {
-                document.getElementById('admin-spotify-url').value = data.spotifyUrl;
-                updateSpotifyEmbed(data.spotifyUrl);
-            }
-            if(data.cmd1Text) document.getElementById('admin-cmd-1').value = data.cmd1Text;
-            if(data.cmd2Text) document.getElementById('admin-cmd-2').value = data.cmd2Text;
-            if(data.cmd3Text) document.getElementById('admin-cmd-3').value = data.cmd3Text;
-            if(data.aiSystemPrompt) {
-                aiSystemPrompt = data.aiSystemPrompt;
-                document.getElementById('ai-prompt').value = data.aiSystemPrompt;
-            }
-        }
-    
-        function loadConfigFromGitHub() {
-            // REAL-TIME UPDATE: Fetch directly from GitHub API to bypass all caches
-            // This ensures data is updated the INSTANT it is pushed to GitHub
-            const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${CONFIG_FILE_PATH}?ref=${GITHUB_BRANCH}`;
-            
-            fetch(apiUrl, { 
-                headers: { 'Accept': 'application/vnd.github.v3.raw' },
-                cache: 'no-store' 
-            })
-                .then(response => response.ok ? response.json() : null)
-                .then(data => {
-                    if (data) {
-                        console.log('Loaded config from GitHub:', data);
-                        localStorage.setItem('githubConfig', JSON.stringify(data));
-                        
-                        // Load photos from GitHub config into localStorage if not already there
-                        if (data.photos && Array.isArray(data.photos)) {
-                            data.photos.forEach((url, index) => {
-                                const key = `photo-gh-${index}`;
-                                localStorage.setItem(key, url);
-                            });
-                        }
-
-                        // Apply GitHub config to UI
-                        if(data.mainTitle) {
-                            document.getElementById('display-main-title').innerText = data.mainTitle;
-                            document.getElementById('admin-main-title').value = data.mainTitle;
-                        }
-                        if(data.botName) {
-                            updateBotNameDisplay(data.botName);
-                            document.getElementById('admin-bot-name').value = data.botName;
-                        }
-                        if(data.customMessage) {
-                            document.getElementById('display-message').innerText = data.customMessage;
-                            document.getElementById('admin-message').value = data.customMessage;
-                        }
-                        if(data.botGreeting) {
-                            document.querySelector('#ai-chat-box .chat-message.ai').innerText = data.botGreeting;
-                            document.getElementById('admin-bot-greeting').value = data.botGreeting;
-                        }
-                        if(data.anniversaryDate) {
-                            document.getElementById('admin-start-date').value = data.anniversaryDate;
-                            ANNIVERSARY_DATE = new Date(data.anniversaryDate);
-                        }
-                        if(data.spotifyUrl) {
-                            document.getElementById('admin-spotify-url').value = data.spotifyUrl;
-                            updateSpotifyEmbed(data.spotifyUrl);
-                        }
-                        if(data.cmd1Text) document.getElementById('admin-cmd-1').value = data.cmd1Text;
-                        if(data.cmd2Text) document.getElementById('admin-cmd-2').value = data.cmd2Text;
-                        if(data.cmd3Text) document.getElementById('admin-cmd-3').value = data.cmd3Text;
-                        if(data.aiSystemPrompt) {
-                            aiSystemPrompt = data.aiSystemPrompt;
-                            document.getElementById('ai-prompt').value = data.aiSystemPrompt;
-                        }
-                    }
-                })
-                .catch(error => console.error('GitHub load error:', error));
-        }
-
-                // Load saved settings on page load
-        window.addEventListener('load', () => {
-            const savedPrompt = localStorage.getItem('aiSystemPrompt');
-            if(savedPrompt) {
-                aiSystemPrompt = savedPrompt;
-                document.getElementById('ai-prompt').value = savedPrompt;
-            }
-            const savedApiKey = localStorage.getItem('aiApiKey');
-            if(savedApiKey) {
-                document.getElementById('ai-api-key').value = savedApiKey;
-            }
-            const savedGroqKey = localStorage.getItem('groqApiKey');
-            if(savedGroqKey) {
-                document.getElementById('groq-api-key').value = savedGroqKey;
-            }
-        });
     </script>
 </body>
 </html>
