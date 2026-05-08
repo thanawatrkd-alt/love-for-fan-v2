@@ -6,7 +6,7 @@
     <title>วันครบรอบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600;800&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
     
@@ -276,9 +276,11 @@
                 loadAssets();
             }
             closeAdmin();
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            }
+            try {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                }
+            } catch (e) { console.error("Confetti error:", e); }
         }
 
         async function uploadToGitHub(file, path) {
@@ -501,9 +503,11 @@
             gsap.to("#main-content", { opacity: 1, duration: 1 });
             startTimer();
             loadAssets();
-            if (typeof confetti === 'function') {
-                confetti({ particleCount: 100, spread: 70 });
-            }
+            try {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70 });
+                }
+            } catch (e) { console.error("Confetti error:", e); }
         }
 
         function startTimer() {
