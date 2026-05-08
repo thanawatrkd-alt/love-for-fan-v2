@@ -472,10 +472,18 @@
         function addNum(n) {
             if(pin.length < 6) {
                 pin += n;
+                console.log("PIN updated:", pin);
                 updateDots();
                 if(pin.length === 6) {
-                    if(pin === "180868") { unlock(); } 
-                    else { errorEffect(); }
+                    console.log("Checking PIN:", pin);
+                    if(pin === "180868") { 
+                        console.log("PIN Correct! Unlocking...");
+                        unlock(); 
+                    } 
+                    else { 
+                        console.log("PIN Incorrect!");
+                        errorEffect(); 
+                    }
                 }
             }
         }
