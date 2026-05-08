@@ -482,8 +482,14 @@
             for(let i=0; i<6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot";
         }
         function errorEffect() {
-            pin = ""; gsap.to("#lock-screen", { x: [-10, 10, -10, 10, 0], duration: 0.4 });
-            setTimeout(updateDots, 300);
+            pin = "";
+            updateDots();
+            gsap.timeline()
+                .to("#lock-screen", { x: -10, duration: 0.07 })
+                .to("#lock-screen", { x: 10, duration: 0.07 })
+                .to("#lock-screen", { x: -10, duration: 0.07 })
+                .to("#lock-screen", { x: 10, duration: 0.07 })
+                .to("#lock-screen", { x: 0, duration: 0.07 });
         }
 
         function unlock() {
