@@ -3,286 +3,533 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>รักแฟนนะคะอยู่กับเค้าไปนาน</title>
-    <!-- Ultimate Stability Version: 2026-04-22 - Auto-Discovery & Reset System -->
+    <title>วันครบรอบ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js?v=2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;600;800&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Anuphan', sans-serif; background: #fff5f7; color: #5d4a50; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Anuphan', sans-serif; 
+            background: #fff5f7; 
+            color: #5d4a50;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
         .font-cute { font-family: 'Gaegu', cursive; }
-        .key-btn { width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; background: #ffffff; border-radius: 50%; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(244, 114, 182, 0.1); transition: all 0.2s; border: 1px solid #ffe4e6; cursor: pointer; color: #ec4899; }
+        
+        /* Lock Screen Keypad */
+        .key-btn {
+            width: 65px; height: 65px;
+            display: flex; align-items: center; justify-content: center;
+            background: #ffffff; border-radius: 50%; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(244, 114, 182, 0.1);
+            transition: all 0.2s; border: 1px solid #ffe4e6;
+            cursor: pointer; color: #ec4899;
+        }
         .key-btn:active { background: #f472b6; color: white; transform: scale(0.9); }
         .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #f472b6; transition: 0.3s; }
         .dot-active { background: #f472b6; transform: scale(1.3); }
+
         .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 2px solid #fff1f2; border-radius: 35px; }
-        .asset-item { background: white; padding: 10px 10px 30px 10px; box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); border-radius: 4px; transition: 0.3s; transform: rotate(var(--rot)); position: relative; }
-        .asset-item img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; background: #000; }
-        .video-item { background: white; padding: 10px; box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); border-radius: 15px; transition: 0.3s; position: relative; width: 100%; }
-        .video-item video { width: 100%; border-radius: 10px; background: #000; max-height: 80vh; }
-        .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; opacity: 0; transition: 0.2s; z-index: 10; }
-        .asset-item:hover .delete-btn, .video-item:hover .delete-btn { opacity: 1; }
-        #admin-modal { display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5); z-index: 5000; align-items: center; justify-content: center; padding: 20px; }
-        .admin-box { background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; max-height: 90vh; overflow-y: auto; }
+
+        /* Photo Styles */
+        .photo-item { 
+            background: white; padding: 10px 10px 30px 10px; 
+            box-shadow: 0 8px 15px rgba(244, 114, 182, 0.08); 
+            border-radius: 4px; transition: 0.3s;
+            transform: rotate(var(--rot));
+        }
+        .photo-item img { width: 100%; height: 160px; object-fit: cover; border-radius: 2px; }
+
+        /* Admin Modal */
+        #admin-modal {
+            display: none; position: fixed; inset: 0; background: rgba(80, 20, 40, 0.5);
+            z-index: 5000; align-items: center; justify-content: center; padding: 20px;
+        }
+        .admin-box { background: white; width: 100%; max-width: 380px; border-radius: 25px; padding: 25px; }
         .file-input { display: block; width: 100%; padding: 10px; background: #fff5f7; border: 1px dashed #f9a8d4; border-radius: 12px; margin-bottom: 12px; font-size: 12px; color: #db2777; }
-        .admin-trigger-minimal { position: absolute; top: 20px; left: 20px; color: #f9a8d4; font-size: 1.3rem; cursor: pointer; background: transparent !important; border: none !important; opacity: 0.5; transition: 0.3s; padding: 5px; }
+    
+        /* Settings Icon (Lock screen only) */
+        .admin-trigger-minimal {
+            position: absolute; top: 20px; left: 20px; 
+            color: #f9a8d4; font-size: 1.3rem; cursor: pointer;
+            background: transparent !important; border: none !important;
+            opacity: 0.5; transition: 0.3s; padding: 5px;
+        }
         .admin-trigger-minimal:hover { opacity: 1; color: #ec4899; transform: rotate(45deg); }
-        #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); z-index: 6000; align-items: center; justify-content: center; flex-direction: column; }
+
+        /* Floating Video Section */
+        #floating-video-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 280px;
+            z-index: 1000;
+            cursor: move;
+            touch-action: none;
+            display: none;
+        }
+
+        .video-wrapper {
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(244, 114, 182, 0.3);
+            border: 4px solid white;
+            background: #000;
+            position: relative;
+        }
+        
+        #main-video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Resize Handle */
+        .resize-handle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 0 0 10px 0;
+            cursor: nwse-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f472b6;
+            font-size: 10px;
+            z-index: 10;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8);
+            z-index: 6000; align-items: center; justify-content: center; flex-direction: column;
+        }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div><p id="loading-text" class="text-pink-600 font-bold">กำลังประมวลผล...</p></div>
 
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div>
+        <p id="loading-text" class="text-pink-600 font-bold">กำลังอัปโหลด...</p>
+    </div>
+
+    <!-- Lock Screen -->
     <div id="lock-screen" class="fixed inset-0 z-[2000] bg-[#fff5f7] flex flex-col items-center justify-center p-6">
-        <button class="admin-trigger-minimal" onclick="openAdmin()"><i class="fas fa-cog"></i></button>
-        <div class="text-center mb-10"><h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">วันครบรอบ</h2></div>
-        <div class="flex gap-4 mb-12"><div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div><div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div></div>
+        <button class="admin-trigger-minimal" onclick="openAdmin()" aria-label="Settings">
+            <i class="fas fa-cog"></i>
+        </button>
+
+        <div class="text-center mb-10">
+            <h2 class="font-cute text-4xl text-pink-600 font-bold tracking-wide">วันครบรอบ</h2>
+        </div>
+
+        <div class="flex gap-4 mb-12">
+            <div class="dot" id="d0"></div><div class="dot" id="d1"></div><div class="dot" id="d2"></div>
+            <div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div>
+        </div>
+
         <div class="grid grid-cols-3 gap-5">
-            <script>for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);</script>
+            <script>
+                for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);
+            </script>
             <div></div><button class="key-btn" onclick="addNum('0')">0</button><button class="key-btn text-pink-300" onclick="delNum()"><i class="fas fa-backspace"></i></button>
         </div>
     </div>
 
+    <!-- Admin Panel -->
     <div id="admin-modal">
         <div class="admin-box">
             <h3 class="font-cute text-2xl text-pink-600 mb-5 text-center">จัดการความทรงจำ ⚙️</h3>
             <div class="space-y-4">
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label><input type="file" id="up-video" accept="video/*" multiple class="file-input"></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ใส่วิดีโอผ่านลิงก์ (URL) 🎥</label><input type="text" id="up-video-url" placeholder="https://example.com/video.mp4" class="file-input"></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label><input type="file" id="up-photos" accept="image/*" multiple class="file-input"></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">ใส่รูปผ่านลิงก์ (URL) 🔗</label><input type="text" id="up-photo-url" placeholder="https://example.com/image.jpg" class="file-input"></div>
-                <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label><input type="file" id="up-music" accept="audio/*" class="file-input"></div>
-                <div class="flex flex-col gap-3 pt-2">
-                    <button onclick="saveAdmin()" class="w-full py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
-                    <button onclick="resetSystem()" class="w-full py-2 bg-red-50 text-red-400 rounded-xl font-bold text-xs border border-red-100">รีเซ็ตระบบ (แก้ปัญหารูปไม่ขึ้น)</button>
-                    <button onclick="closeAdmin()" class="w-full py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">วิดีโอของเรา (.mp4)</label>
+                    <input type="file" id="up-video" accept="video/*" class="file-input">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">แกลเลอรี่ภาพ 📸</label>
+                    <input type="file" id="up-photos" accept="image/*" multiple class="file-input">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase ml-2">เพลงรัก (.mp3)</label>
+                    <input type="file" id="up-music" accept="audio/*" class="file-input">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="saveAdmin()" class="flex-1 py-3 bg-pink-500 text-white rounded-xl font-bold shadow-lg shadow-pink-100">บันทึก</button>
+                    <button onclick="closeAdmin()" class="px-5 py-3 bg-gray-100 text-gray-400 rounded-xl font-bold">ปิด</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Main Content -->
     <main id="main-content" class="hidden opacity-0">
         <header class="pt-16 pb-10 text-center px-4">
-            <h1 class="font-cute text-5xl text-pink-500 mb-6">รักแฟนนะคะอยู่กับเค้าไปนาน</h1>
+            <h1 class="font-cute text-5xl text-pink-500 mb-6">My Sweetheart.</h1>
             <div class="flex justify-center gap-2 flex-wrap">
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-days" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วัน</div></div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-hours" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">ชั่วโมง</div></div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-minutes" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">นาที</div></div>
-                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50"><div id="t-seconds" class="text-xl font-bold text-pink-600">0</div><div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">วินาที</div></div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
+                    <div id="t-days" class="text-xl font-bold text-pink-600">0</div>
+                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">Days</div>
+                </div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
+                    <div id="t-hours" class="text-xl font-bold text-pink-600">0</div>
+                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">Hours</div>
+                </div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
+                    <div id="t-minutes" class="text-xl font-bold text-pink-600">0</div>
+                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">Mins</div>
+                </div>
+                <div class="bg-white p-3 rounded-2xl shadow-sm min-w-[65px] border border-pink-50">
+                    <div id="t-seconds" class="text-xl font-bold text-pink-600">0</div>
+                    <div class="text-[7px] text-gray-400 font-bold uppercase tracking-widest">Secs</div>
+                </div>
             </div>
         </header>
 
-        <section class="px-6 mb-12"><h3 class="font-cute text-3xl text-center text-pink-600 mb-8">วิดีโอของเรา 🎥</h3><div id="video-grid" class="flex flex-col gap-8 max-w-xl mx-auto"></div></section>
-        <section class="px-6 mb-12"><div class="max-w-md mx-auto glass-card p-8 shadow-xl relative text-center space-y-4"><p class="font-bold text-xl text-pink-600">"รักแฟนนะคะอยู่กับเค้าไปนาน"</p><p class="text-sm">รักแฟนนะคะอยู่กับเค้าไปนาน</p><p class="font-bold text-pink-600 pt-3 text-lg">💖💖</p></div></section>
-        <section class="px-6 mb-24"><h3 class="font-cute text-3xl text-center text-pink-600 mb-8">ความทรงจำของเรา 📸</h3><div id="gallery-grid" class="grid grid-cols-2 gap-5 max-w-sm mx-auto"></div></section>
-        <footer class="py-16 text-center"><p class="font-cute text-2xl text-pink-500 mb-2">อยู่ด้วยกันตลอดไปนะ 💖🌷</p></footer>
+        <!-- Floating Video Container -->
+        <div id="floating-video-container">
+            <div class="resize-handle"><i class="fas fa-expand-alt"></i></div>
+            <div class="video-wrapper">
+                <video id="main-video" controls playsinline loop></video>
+            </div>
+        </div>
+
+        <!-- Message Section -->
+        <section class="px-6 mb-12">
+            <div class="max-w-md mx-auto glass-card p-8 shadow-xl relative">
+                <div class="text-pink-900 italic leading-relaxed text-center space-y-4">
+                    <p class="font-bold text-xl text-pink-600">"เด่กร้ากกพี่ที่สุดในโล๊กกเลย"</p>
+                    <p class="text-sm">
+                        เด่กขอโทดดที่เด่กงี่เง่าเอาแต่จายย แต่พี่ก่ไม่เคยว่าเด่กเลยเด่กเข้าใจพี่ทุ๊กกอย่างเลยย ที่พี่ไม่มีเวลาห้ายยเด่กกก 
+                        เด่กขอบคุณพี่ ที่ทนอยู่กับคนแบบเด่กได้ พี่ชัดเจนกับเด่กตลอดด แม้ในตอนที่ไม่ได้คบกันนน
+                        พอคบบกันนเด่กก่รู้้เลยว่าาพี่เสมอต้นเสมอปลายกับเด่กมาตลอดด
+                    </p>
+                    <p class="font-bold text-pink-600 pt-3 text-lg">ร้ากกพี่ อยู่กับเด่กไปนานๆน๊าาา 💖💖</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gallery -->
+        <section class="px-6 mb-24">
+            <h3 class="font-cute text-3xl text-center text-pink-600 mb-8">Gallery of Us 📸</h3>
+            <div id="gallery-grid" class="grid grid-cols-2 gap-5 max-w-sm mx-auto">
+                <!-- User Photos -->
+            </div>
+        </section>
+
+        <footer class="py-16 text-center">
+            <p class="font-cute text-2xl text-pink-500 mb-2">Forever Together 💖🌷</p>
+        </footer >
+
         <audio id="main-audio" loop></audio>
     </main>
 
     <script>
+        // GitHub Configuration
         const GITHUB_CONFIG = {
-            token: 'ghp_' + 'SkaQKhVFuoWmIfmRlOEW88AyZ1IxKi246Lsg',
+            token: 'ghp_' + 'zX9xrV14GIxkwBVHKXNweoWE2IlLHX47WSJU',
             owner: 'thanawatrkd-alt',
-            repo: 'love-for-fan-v2',
-            configFile: 'docs/config.json'
+            repo: 'love-for-fan-v2'
         };
 
         let pin = "";
-        let siteConfig = { photos: [], videos: [], musicUrl: "" };
 
+        // Admin functionality
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
 
-        async function resetSystem() {
-            if(!confirm('ต้องการรีเซ็ตระบบเพื่อกู้คืนรูปภาพที่หายไปใช่ไหม?')) return;
-            document.getElementById('loading-overlay').style.display = 'flex';
-            document.getElementById('loading-text').innerText = "กำลังรีเซ็ตระบบ...";
-            localStorage.clear();
-            await autoDiscoverFiles();
-            alert('รีเซ็ตสำเร็จ! ระบบกู้คืนข้อมูลเรียบร้อยแล้ว');
-            window.location.reload(true);
-        }
-
-        async function loadConfig() {
-            try {
-                const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/${GITHUB_CONFIG.configFile}?nocache=${Date.now()}`);
-                if (res.ok) {
-                    siteConfig = await res.json();
-                    if (!siteConfig.photos.length && !siteConfig.videos.length) {
-                        await autoDiscoverFiles();
-                    } else {
-                        renderAssets();
-                    }
-                } else {
-                    await autoDiscoverFiles();
-                }
-            } catch (e) { await autoDiscoverFiles(); }
-        }
-
-        async function autoDiscoverFiles() {
-            try {
-                const imgRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/docs/images`, {
-                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
-                });
-                const vidRes = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/docs/assets/video`, {
-                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
-                });
-
-                if (imgRes.ok) {
-                    const files = await imgRes.json();
-                    siteConfig.photos = files.filter(f => f.name !== '.gitkeep').map(f => `images/${f.name}`);
-                }
-                if (vidRes.ok) {
-                    const files = await vidRes.json();
-                    siteConfig.videos = files.filter(f => f.name !== '.gitkeep').map(f => `assets/video/${f.name}`);
-                }
-                
-                await saveConfigToGitHub();
-                renderAssets();
-            } catch (e) { console.error("Discovery error", e); }
-        }
-
-        async function saveConfigToGitHub() {
-            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.configFile}`;
-            const checkRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
-            let sha = null;
-            if (checkRes.ok) { const data = await checkRes.json(); sha = data.sha; }
-
-            await fetch(url, {
-                method: 'PUT',
-                headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: "Update site config (Auto-Sync)",
-                    content: btoa(unescape(encodeURIComponent(JSON.stringify(siteConfig, null, 2)))),
-                    sha: sha
-                })
-            });
-        }
-
         async function saveAdmin() {
-            const vFiles = document.getElementById('up-video').files;
-            const vUrl = document.getElementById('up-video-url').value.trim();
+            const vFile = document.getElementById('up-video').files[0];
             const mFile = document.getElementById('up-music').files[0];
             const pFiles = document.getElementById('up-photos').files;
-            const pUrl = document.getElementById('up-photo-url').value.trim();
 
-            if (vFiles.length > 0 || vUrl || mFile || pFiles.length > 0 || pUrl) {
+            if(vFile || mFile || pFiles.length > 0) {
                 document.getElementById('loading-overlay').style.display = 'flex';
-                try {
-                    for (let file of vFiles) {
-                        const path = `docs/assets/video/${Date.now()}-${file.name}`;
-                        await uploadFile(file, path);
-                        siteConfig.videos.unshift(`assets/video/${path.split('/').pop()}`);
-                    }
-                    if (vUrl) {
-                        siteConfig.videos.unshift(vUrl);
-                    }
-                    if (mFile) {
-                        const path = 'docs/assets/audio/main.mp3';
-                        await uploadFile(mFile, path);
-                        siteConfig.musicUrl = 'assets/audio/main.mp3';
-                    }
+                
+                if(vFile) {
+                    document.getElementById('loading-text').innerText = "กำลังอัปโหลดวิดีโอ...";
+                    await uploadToGitHub(vFile, 'assets/video/main.mp4');
+                }
+                
+                if(mFile) {
+                    document.getElementById('loading-text').innerText = "กำลังอัปโหลดเพลง...";
+                    await uploadToGitHub(mFile, 'assets/audio/main.mp3');
+                }
+
+                if(pFiles.length > 0) {
+                    document.getElementById('loading-text').innerText = "กำลังอัปโหลดรูปภาพ...";
                     for (let file of pFiles) {
-                        const path = `docs/images/${Date.now()}-${file.name}`;
-                        await uploadFile(file, path);
-                        siteConfig.photos.unshift(`images/${path.split('/').pop()}`);
+                        await uploadToGitHub(file, `images/${Date.now()}-${file.name}`);
                     }
-                    if (pUrl) {
-                        siteConfig.photos.unshift(pUrl);
-                    }
-                    await saveConfigToGitHub();
-                    alert('บันทึกสำเร็จ! ข้อมูลจะอัปเดตทันที');
-                    window.location.reload(true);
-                } catch (e) { alert('อัปโหลดล้มเหลว: ' + e.message); }
-                finally { document.getElementById('loading-overlay').style.display = 'none'; }
+                }
+                
+                document.getElementById('loading-overlay').style.display = 'none';
+                alert('บันทึกข้อมูลเรียบร้อยแล้ว! เว็บไซต์จะอัปเดตในอีกครู่หนึ่ง');
+                loadAssets();
             }
             closeAdmin();
+            try {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                }
+            } catch (e) { console.error("Confetti error:", e); }
         }
 
-        async function uploadFile(file, path) {
+        async function uploadToGitHub(file, path) {
             const reader = new FileReader();
             return new Promise((resolve, reject) => {
                 reader.onload = async () => {
                     const content = reader.result.split(',')[1];
                     const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-                    const res = await fetch(url, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: `Upload ${path}`, content: content })
-                    });
-                    if (res.ok) resolve(); else reject(new Error("Upload failed"));
+                    
+                    try {
+                        let sha = null;
+                        const checkRes = await fetch(url, {
+                            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                        });
+                        if(checkRes.ok) {
+                            const data = await checkRes.json();
+                            sha = data.sha;
+                        }
+
+                        const response = await fetch(url, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${GITHUB_CONFIG.token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                message: `Update asset: ${path}`,
+                                content: content,
+                                sha: sha
+                            })
+                        });
+                        resolve(await response.json());
+                    } catch (error) {
+                        console.error('Upload failed:', error);
+                        reject(error);
+                    }
                 };
                 reader.readAsDataURL(file);
             });
         }
 
-        async function deleteAsset(type, path) {
-            if (!confirm('ลบไฟล์นี้ใช่ไหม?')) return;
-            document.getElementById('loading-overlay').style.display = 'flex';
+        async function loadAssets() {
+            // Load Video
+            const videoUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/video/main.mp4`;
+            const videoElement = document.getElementById('main-video');
+            videoElement.src = videoUrl;
+            document.getElementById('floating-video-container').style.display = 'block';
+
+            // Load Audio
+            const audioUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/assets/audio/main.mp3`;
+            const audioElement = document.getElementById('main-audio');
+            audioElement.src = audioUrl;
+
+            // Load Gallery
+            const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/images`;
             try {
-                if (!path.startsWith('http')) {
-                    const fullPath = `docs/${path}`;
-                    const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${fullPath}`;
-                    const getRes = await fetch(url, { headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` } });
-                    if (getRes.ok) {
-                        const data = await getRes.json();
-                        await fetch(url, {
-                            method: 'DELETE',
-                            headers: { 'Authorization': `token ${GITHUB_CONFIG.token}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ message: `Delete ${path}`, sha: data.sha })
-                        });
-                    }
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `token ${GITHUB_CONFIG.token}` }
+                });
+                const files = await response.json();
+                
+                if (Array.isArray(files)) {
+                    const grid = document.getElementById('gallery-grid');
+                    grid.innerHTML = "";
+                    
+                    const images = files.filter(f => f.name !== '.gitkeep' && /\.(jpg|jpeg|png|gif|webp)$/i.test(f.name))
+                                       .sort((a, b) => b.name.localeCompare(a.name));
+
+                    images.forEach((file, index) => {
+                        const div = document.createElement('div');
+                        const rot = (index % 2 === 0 ? "-3deg" : "3deg");
+                        div.className = "photo-item";
+                        div.style.setProperty('--rot', rot);
+                        const imageUrl = `https://cdn.jsdelivr.net/gh/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}@main/${file.path}`;
+                        div.innerHTML = `<img src="${imageUrl}" loading="lazy">`;
+                        grid.appendChild(div);
+                    });
                 }
-                
-                if (type === 'photo') siteConfig.photos = siteConfig.photos.filter(p => p !== path);
-                else siteConfig.videos = siteConfig.videos.filter(v => v !== path);
-                
-                await saveConfigToGitHub();
-                alert('ลบสำเร็จ!');
-                window.location.reload(true);
-            } catch (e) { alert('ลบล้มเหลว: ' + e.message); }
-            finally { document.getElementById('loading-overlay').style.display = 'none'; }
-        }
-
-        function renderAssets() {
-            const vGrid = document.getElementById('video-grid');
-            const pGrid = document.getElementById('gallery-grid');
-            const cacheBuster = `?t=${Date.now()}`;
-            vGrid.innerHTML = siteConfig.videos.length ? "" : '<p class="text-center text-pink-300 text-sm py-5">ยังไม่มีวิดีโอ...</p>';
-            pGrid.innerHTML = siteConfig.photos.length ? "" : '<p class="col-span-2 text-center text-pink-300 text-sm py-10">ยังไม่มีรูปภาพ...</p>';
-
-            siteConfig.videos.forEach(path => {
-                const div = document.createElement('div'); div.className = "video-item";
-                const src = path.startsWith('http') ? path : `${path}${cacheBuster}`;
-                const rawSrc = path.startsWith('http') ? path : `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}`;
-                div.innerHTML = `<video src="${src}" controls playsinline onerror="this.src='${rawSrc}'"></video>
-                <div class="delete-btn" onclick="deleteAsset('video', '${path}')"><i class="fas fa-trash"></i></div>`;
-                vGrid.appendChild(div);
-            });
-
-            siteConfig.photos.forEach((path, i) => {
-                const div = document.createElement('div'); div.className = "asset-item"; div.style.setProperty('--rot', i % 2 === 0 ? "-3deg" : "3deg");
-                const src = path.startsWith('http') ? path : `${path}${cacheBuster}`;
-                const rawSrc = path.startsWith('http') ? path : `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/main/docs/${path}`;
-                div.innerHTML = `<img src="${src}" loading="lazy" onerror="this.src='${rawSrc}'">
-                <div class="delete-btn" onclick="deleteAsset('photo', '${path}')"><i class="fas fa-trash"></i></div>`;
-                pGrid.appendChild(div);
-            });
-
-            if (siteConfig.musicUrl) {
-                const musicSrc = siteConfig.musicUrl.startsWith('http') ? siteConfig.musicUrl : `${siteConfig.musicUrl}${cacheBuster}`;
-                document.getElementById('main-audio').src = musicSrc;
+            } catch (error) {
+                console.error('Failed to load gallery:', error);
             }
         }
 
-        function addNum(n) { pin += n; updateDots(); if (pin.length === 6) { if (pin === "080868") unlock(); else { pin = ""; updateDots(); gsap.to("#lock-screen", { x: [-10, 10, 0], duration: 0.3 }); } } }
-        function delNum() { pin = pin.slice(0, -1); updateDots(); }
-        function updateDots() { for (let i = 0; i < 6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot"; }
-        function unlock() { gsap.to("#lock-screen", { y: "-100%", duration: 1, onComplete: () => document.getElementById('lock-screen').remove() }); document.getElementById('main-content').classList.remove('hidden'); gsap.to("#main-content", { opacity: 1, duration: 1 }); startTimer(); loadConfig(); }
-        function startTimer() { const start = new Date("2025-08-08T00:00:00"); setInterval(() => { const diff = new Date() - start; document.getElementById('t-days').innerText = Math.floor(diff / 864e5); document.getElementById('t-hours').innerText = Math.floor(diff / 36e5 % 24); document.getElementById('t-minutes').innerText = Math.floor(diff / 6e4 % 60); document.getElementById('t-seconds').innerText = Math.floor(diff / 1e3 % 60); }, 1000); }
+        // Draggable & Resizable Logic
+        const floatingContainer = document.getElementById('floating-video-container');
+        const resizeHandle = document.querySelector('.resize-handle');
+        let isDragging = false;
+        let isResizing = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        // Dragging
+        floatingContainer.addEventListener('mousedown', dragStart);
+        window.addEventListener('mousemove', drag);
+        window.addEventListener('mouseup', dragEnd);
+        floatingContainer.addEventListener('touchstart', dragStart);
+        window.addEventListener('touchmove', drag);
+        window.addEventListener('touchend', dragEnd);
+
+        function dragStart(e) {
+            if (e.target === resizeHandle || resizeHandle.contains(e.target)) return;
+            
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+            isDragging = true;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                if (e.type === "touchmove") {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, floatingContainer);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+
+        function dragEnd() {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        // Resizing
+        resizeHandle.addEventListener('mousedown', resizeStart);
+        window.addEventListener('mousemove', resize);
+        window.addEventListener('mouseup', resizeEnd);
+        resizeHandle.addEventListener('touchstart', resizeStart);
+        window.addEventListener('touchmove', resize);
+        window.addEventListener('touchend', resizeEnd);
+
+        let startWidth, startHeight, startMouseX, startMouseY;
+
+        function resizeStart(e) {
+            isResizing = true;
+            startWidth = floatingContainer.offsetWidth;
+            startHeight = floatingContainer.offsetHeight;
+            if (e.type === "touchstart") {
+                startMouseX = e.touches[0].clientX;
+                startMouseY = e.touches[0].clientY;
+            } else {
+                startMouseX = e.clientX;
+                startMouseY = e.clientY;
+            }
+            e.stopPropagation();
+        }
+
+        function resize(e) {
+            if (!isResizing) return;
+            let mouseX, mouseY;
+            if (e.type === "touchmove") {
+                mouseX = e.touches[0].clientX;
+                mouseY = e.touches[0].clientY;
+            } else {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }
+            
+            const width = startWidth - (mouseX - startMouseX);
+            if (width > 150 && width < 600) {
+                floatingContainer.style.width = width + 'px';
+            }
+        }
+
+        function resizeEnd() {
+            isResizing = false;
+        }
+
+        // Lock Logic - Password: 180868
+        function addNum(n) {
+            if(pin.length < 6) {
+                pin += n;
+                updateDots();
+                if(pin.length === 6) {
+                    // ใช้ setTimeout เล็กน้อยเพื่อให้ UI อัปเดตจุดสุดท้ายก่อนปลดล็อค
+                    setTimeout(() => {
+                        if(pin === "180868") { 
+                            unlock(); 
+                        } 
+                        else { 
+                            errorEffect(); 
+                        }
+                    }, 100);
+                }
+            }
+        }
+        function delNum() { pin = pin.slice(0,-1); updateDots(); }
+        function updateDots() {
+            for(let i=0; i<6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot";
+        }
+        function errorEffect() {
+            pin = "";
+            updateDots();
+            gsap.timeline()
+                .to("#lock-screen", { x: -10, duration: 0.07 })
+                .to("#lock-screen", { x: 10, duration: 0.07 })
+                .to("#lock-screen", { x: -10, duration: 0.07 })
+                .to("#lock-screen", { x: 10, duration: 0.07 })
+                .to("#lock-screen", { x: 0, duration: 0.07 });
+        }
+
+        function unlock() {
+            gsap.to("#lock-screen", { 
+                y: "-100%", duration: 1.5, ease: "expo.inOut", 
+                onComplete: () => { document.getElementById('lock-screen').remove(); }
+            });
+            document.getElementById('main-content').classList.remove('hidden');
+            gsap.to("#main-content", { opacity: 1, duration: 1 });
+            startTimer();
+            loadAssets();
+            try {
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70 });
+                }
+            } catch (e) { console.error("Confetti error:", e); }
+        }
+
+        function startTimer() {
+            const startDay = new Date("2026-04-14T00:00:00");
+            setInterval(() => {
+                const now = new Date();
+                const diff = now - startDay;
+                const currentDiff = diff > 0 ? diff : 0;
+                
+                document.getElementById('t-days').innerText = Math.floor(currentDiff / (1000 * 60 * 60 * 24));
+                document.getElementById('t-hours').innerText = Math.floor((currentDiff / (1000 * 60 * 60)) % 24);
+                document.getElementById('t-minutes').innerText = Math.floor((currentDiff / (1000 * 60)) % 60);
+                document.getElementById('t-seconds').innerText = Math.floor((currentDiff / 1000) % 60);
+            }, 1000);
+        }
     </script>
 </body>
 </html>
