@@ -28,6 +28,10 @@
             box-shadow: 0 4px 10px rgba(244, 114, 182, 0.1);
             transition: all 0.2s; border: 1px solid #ffe4e6;
             cursor: pointer; color: #ec4899;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
         .key-btn:active { background: #f472b6; color: white; transform: scale(0.9); }
         .dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid #f472b6; transition: 0.3s; }
@@ -137,11 +141,11 @@
             <div class="dot" id="d3"></div><div class="dot" id="d4"></div><div class="dot" id="d5"></div>
         </div>
 
-        <div class="grid grid-cols-3 gap-5">
+        <div class="grid grid-cols-3 gap-5" id="keypad">
             <script>
-                for(let i=1; i<=9; i++) document.write(`<button class="key-btn" onclick="addNum('${i}')">${i}</button>`);
+                for(let i=1; i<=9; i++) document.write(`<button type="button" class="key-btn" data-num="${i}">${i}</button>`);
             </script>
-            <div></div><button class="key-btn" onclick="addNum('0')">0</button><button class="key-btn text-pink-300" onclick="delNum()"><i class="fas fa-backspace"></i></button>
+            <div></div><button type="button" class="key-btn" data-num="0">0</button><button type="button" class="key-btn text-pink-300" id="delBtn"><i class="fas fa-backspace"></i></button>
         </div>
     </div>
 
@@ -480,10 +484,13 @@
                 }
             }
         }
+        
         function delNum() { pin = pin.slice(0,-1); updateDots(); }
+        
         function updateDots() {
             for(let i=0; i<6; i++) document.getElementById(`d${i}`).className = i < pin.length ? "dot dot-active" : "dot";
         }
+        
         function errorEffect() {
             pin = "";
             updateDots();
@@ -524,6 +531,63 @@
                 document.getElementById('t-seconds').innerText = Math.floor((currentDiff / 1000) % 60);
             }, 1000);
         }
+
+        // ============ TOUCH EVENT SUPPORT FOR KEYPAD ============
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get all number buttons
+            const numberButtons = document.querySelectorAll('[data-num]');
+            const delBtn = document.getElementById('delBtn');
+
+            // Add touch and click support to number buttons
+            numberButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const num = this.getAttribute('data-num');
+                    addNum(num);
+                });
+
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const num = this.getAttribute('data-num');
+                    addNum(num);
+                    // Visual feedback
+                    this.style.background = '#f472b6';
+                    this.style.color = 'white';
+                    this.style.transform = 'scale(0.9)';
+                });
+
+                btn.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    // Reset visual
+                    this.style.background = '#ffffff';
+                    this.style.color = '#ec4899';
+                    this.style.transform = 'scale(1)';
+                });
+            });
+
+            // Add touch support to delete button
+            delBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                delNum();
+            });
+
+            delBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                delNum();
+                // Visual feedback
+                this.style.background = '#f472b6';
+                this.style.color = 'white';
+                this.style.transform = 'scale(0.9)';
+            });
+
+            delBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                // Reset visual
+                this.style.background = '#ffffff';
+                this.style.color = '#ec4899';
+                this.style.transform = 'scale(1)';
+            });
+        });
     </script>
 </body>
 </html>
